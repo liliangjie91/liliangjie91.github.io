@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="大模型算算术1. 大模型计算量2. 英伟达显卡比较3. 大模型算力推演优化实战 0. 基础    参数格式       全精度 float32 4字节&#x3D;4Byte   半精度 float16 2字节&#x3D;2Byte    int8 1字节&#x3D;1Byte    int4 半字节&#x3D;0.5Byte     1. 参数量1.1 传统Transformer Decoder">
+<meta property="og:type" content="article">
+<meta property="og:title" content="大模型参数量计算">
+<meta property="og:url" content="http://example.com/2024/12/25/2024-12-21-llm-params-caculate/index.html">
+<meta property="og:site_name" content="LeonardWo">
+<meta property="og:description" content="大模型算算术1. 大模型计算量2. 英伟达显卡比较3. 大模型算力推演优化实战 0. 基础    参数格式       全精度 float32 4字节&#x3D;4Byte   半精度 float16 2字节&#x3D;2Byte    int8 1字节&#x3D;1Byte    int4 半字节&#x3D;0.5Byte     1. 参数量1.1 传统Transformer Decoder">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-12-25T14:16:53.000Z">
+<meta property="article:modified_time" content="2024-12-29T13:05:10.392Z">
+<meta property="article:author" content="Leonard">
+<meta property="article:tag" content="大模型">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2024/12/25/2024-12-21-llm-params-caculate/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>大模型参数量计算 | LeonardWo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">LeonardWo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">wowowowo</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2024/12/25/2024-12-21-llm-params-caculate/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar2.jpg">
+      <meta itemprop="name" content="Leonard">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LeonardWo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          大模型参数量计算
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2024-12-25 22:16:53" itemprop="dateCreated datePublished" datetime="2024-12-25T22:16:53+08:00">2024-12-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-12-29 21:05:10" itemprop="dateModified" datetime="2024-12-29T21:05:10+08:00">2024-12-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">技术</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="大模型算算术"><a href="#大模型算算术" class="headerlink" title="大模型算算术"></a>大模型算算术</h1><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/sinat_39620217/article/details/136910771">1. 大模型计算量</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/sinat_39620217/article/details/135916437">2. 英伟达显卡比较</a><br><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/2317901">3. 大模型算力推演优化实战</a></p>
+<h2 id="0-基础"><a href="#0-基础" class="headerlink" title="0. 基础"></a>0. 基础</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>参数格式</th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>全精度</td>
+<td>float32</td>
+<td>4字节=4Byte</td>
+</tr>
+<tr>
+<td>半精度</td>
+<td>float16</td>
+<td>2字节=2Byte</td>
+</tr>
+<tr>
+<td></td>
+<td>int8</td>
+<td>1字节=1Byte</td>
+</tr>
+<tr>
+<td></td>
+<td>int4</td>
+<td>半字节=0.5Byte</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="1-参数量"><a href="#1-参数量" class="headerlink" title="1. 参数量"></a>1. 参数量</h2><h3 id="1-1-传统Transformer-Decoder"><a href="#1-1-传统Transformer-Decoder" class="headerlink" title="1.1 传统Transformer Decoder"></a>1.1 传统Transformer Decoder</h3><span id="more"></span>
+<p>对于多层堆叠的transformer Decoder，模型参数总量即<br>decoder层数L x 单层参数量 + embedding参数</p>
+<script type="math/tex; mode=display">N_{model} = LN_{deocder} + 2N_{emb}=L(4n^2 + 2mn) + N_{vocab}·n</script><p>以上是一个近似，还有bias以及layerNorm参数忽略了<br>对于基础transformer decoder 类的大模型，<br>参数计算可以进一步简化：<br>一般m=4n，公式进一步简化为$N_{model} = 12Ln^2 + N_{vocab}·n$<br>后一项远小于前一项，故进一步简单估计：<br>$N_{model} = 12Ln^2$<br>下面分段解释</p>
+<h4 id="1-1-1-单个Decoder"><a href="#1-1-1-单个Decoder" class="headerlink" title="1.1.1 单个Decoder"></a>1.1.1 单个Decoder</h4><p>实际大模型训练时使用的decoder与原版transformer的decoder不同<br>即大模型的decoder只有1个自注意力层<br>每个Decoder = 1个自注意力层，1个FFN层</p>
+<script type="math/tex; mode=display">N_{decoder} = 4n^2 + 2mn</script><ol>
+<li><p><strong>多头自注意力层</strong>  </p>
+<script type="math/tex; mode=display">N_{attention} = 4n^2</script><p>emb_input=n, heads=h, emb_QKV = n/h<br>注意力层: $3 \times emb_{QKV} \times heads = 3n^2$<br>拼接后的投影层：$n^2$</p>
+</li>
+<li><p><strong>FFN层</strong>  </p>
+<script type="math/tex; mode=display">N_{ffn} = 2mn</script><p>emb_input=n，emb_hidden=m</p>
+</li>
+</ol>
+<h4 id="1-1-2-embedding层"><a href="#1-1-2-embedding层" class="headerlink" title="1.1.2 embedding层"></a>1.1.2 embedding层</h4><p>该参数与最后的输出层共享权重，故只计算1次$N_{emb} = N_{vocab}·n$</p>
+<h3 id="1-2-改进Transformer-Decoder"><a href="#1-2-改进Transformer-Decoder" class="headerlink" title="1.2 改进Transformer Decoder"></a>1.2 改进Transformer Decoder</h3><h4 id="1-2-1-Attention阶段-GQA技术"><a href="#1-2-1-Attention阶段-GQA技术" class="headerlink" title="1.2.1 Attention阶段-GQA技术"></a>1.2.1 Attention阶段-GQA技术</h4><p>使用G个组可以减少存储每个头的键和值所需的内存开销，特别是在具有大的上下文窗口或批次大小的情况下。GQA提供了对模型质量和效率的细致控制，让KV矩阵的heads少于Q矩阵的heads，一般kv_heads=8 q_heads可以从32涨到128等，而QKV矩阵维度是相同的，少的那些KVhead会通过复制补充。此时，计算多头注意力参数量会有点变化</p>
+<script type="math/tex; mode=display">
+N_{attention}=2*n^2 + 2*n^2*\frac{heads_{kv}}{heads_{q}}= 2*n^2*(1+\frac{heads_{kv}}{heads_{q}})</script><h4 id="1-2-2-FFN阶段-GLU门控"><a href="#1-2-2-FFN阶段-GLU门控" class="headerlink" title="1.2.2 FFN阶段-GLU门控"></a>1.2.2 FFN阶段-GLU门控</h4><p>通常加一个gate，所以多了一个参数矩阵，故$N_{ffn}=3mn$</p>
+<h2 id="2-参数量与模型大小关系—B与G的关系"><a href="#2-参数量与模型大小关系—B与G的关系" class="headerlink" title="2. 参数量与模型大小关系—B与G的关系"></a>2. 参数量与模型大小关系—B与G的关系</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/u012939880/article/details/136911525">原文链接</a><br>对同一个模型，虽然模型不变，但是训练过程与推理过程使用的空间却差距很大，主要原因是，推理时，不需要计算梯度，不需要储存中间激活结果，不需要储存优化器参数</p>
+<p><strong>推理过程:</strong><br>计算的公式是 </p>
+<script type="math/tex; mode=display">G = \frac{B}{(1.024)^3}\times sizeof(参数类型)</script><p>比如6B全精度, 那就是<br>$G= \frac{6}{(1.024)^3}\times sizeof(float)=\frac{6}{(1.024)^3}\times 4\approx22.35GB$<br>而如果使用量化技术，INT4类型下<br>$G= \frac{6}{(1.024)^3}\times 0.5\approx2.8GB$</p>
+<p><strong>训练过程:</strong><br>训练过程要保存梯度等计算过程，需要内存空间一般是推理的4倍,<br>上面全精度6B需要$G\times4\approx22.35\times4=89GB$<br>而且训练过程要求至少半精度，不能使用量化，所以训练过程使用的显存要远大于推理</p>
+<h2 id="3-计算量"><a href="#3-计算量" class="headerlink" title="3. 计算量"></a>3. 计算量</h2><h3 id="3-1-FLOPs-矩阵相乘计算次数"><a href="#3-1-FLOPs-矩阵相乘计算次数" class="headerlink" title="3.1 FLOPs-矩阵相乘计算次数"></a>3.1 FLOPs-矩阵相乘计算次数</h3><p>FLOPs：floating point operations 指的是浮点运算次数，一般特指乘加运算次数，理解为计算量，可以用来衡量算法/模型时间的复杂度<br>对于矩阵相乘$A\in R^{k\times m} * B\in R^{m\times n}$<br>$FLOPs = 2kmn$<br>当k=1时，即向量与矩阵相乘，最终得到$1\times n$的向量，其中计算了$m\times n$次乘法，以及$m\times n$次加法</p>
+<script type="math/tex; mode=display">\begin{bmatrix}1 & 2 & 3\end{bmatrix}
+\begin{bmatrix}
+ 1 & 1\\
+ 2 & 2\\
+ 3 & 3
+\end{bmatrix}=\begin{bmatrix}1*1+2*2+3*3 & ···\end{bmatrix}=
+\begin{bmatrix} 1+4+9 & ···\end{bmatrix}=\begin{bmatrix}14 & 14\end{bmatrix}</script><p>以上例子，最终结果每个元素计算了3次乘法，3次加法(3个元素相加)<br>总计算次数$=2nm=2*(3+3)=12$  </p>
+<h3 id="3-2-大模型计算量-前向传播"><a href="#3-2-大模型计算量-前向传播" class="headerlink" title="3.2 大模型计算量-前向传播"></a>3.2 大模型计算量-前向传播</h3><ul>
+<li>在简单MLP网络前向传播中，对于<strong>1个样本(1个token)</strong>$X\in R^{1\times n}$ 在经过1个3层的网络$\left \{W_1^{n\times m},W_2^{m\times k},W_3^{k\times o}  \right \} $时，对于bias，其数量级较小可以忽略，则<script type="math/tex; mode=display">FLOPs=2*(nm+mk+ko)=2*(模型参数量)</script></li>
+<li>在self-Attention前向传播中，对于<strong>1个seq(设有m个token)</strong>，则输入$X\in R^{m\times n}$  <ul>
+<li>投影层<ul>
+<li>8头投影$\left \{W_{Q1}^{n\times \frac{n}{8}},W_{K1}^{n\times \frac{n}{8}},W_{V1}^{n\times \frac{n}{8}},…,W_{V8}^{n\times \frac{n}{8}}  \right \} $</li>
+<li>计算量： <script type="math/tex">FLOPs=8*3*(2*m*n*\frac{n}{8})=m*2*3*n^2=m*2*(该层参数量)</script></li>
+<li>所以对于每一个token，投影层$FLOPs=2*(该层参数量)=6n^2$</li>
+</ul>
+</li>
+<li>self_Attetion  
+        * 8头自注意力$\left \{{Q_1}^{m\times \frac{n}{8}},{K_1}^{m\times \frac{n}{8}},{V_1}^{m\times \frac{n}{8}},...,{V_8}^{m\times \frac{n}{8}}  \right \} $
+        
+<ul>
+<li>计算注意力分数$score_{atten}=QK^T$ 则 <script type="math/tex">FLOPs=8*2*(m*\frac{n}{8}*m)=m*2*(m*n)</script></li>
+<li>计算输出结果$res=score_{atten} \cdot V $ 则 <script type="math/tex">FLOPs = 8*2*(m*m*\frac{n}{8})=m*2*(m*n)</script></li>
+<li>所以对于每一个token，$FLOPs=4<em>(m</em>n)$</li>
+</ul>
+</li>
+<li>Attention 输出投影层<ul>
+<li>单层前向 $W_{O}^{n\times n}$</li>
+<li>计算量： <script type="math/tex">FLOPs = 2*m*n*n = m*2*(该层参数量)</script></li>
+<li>所以对于每一个token，$FLOPs=2*(该层参数量)=2n^2$</li>
+</ul>
+</li>
+<li>FFN层<ul>
+<li>双层前向 $\left \{W_{ffn1}^{n\times 4n},W_{ffn2}^{n\times 4n}  \right \} $</li>
+<li>计算量： <script type="math/tex">FLOPs = 2*m*(n*4n+n*4n) = m*2*(该层参数量)</script></li>
+<li>所以对于每一个token，$FLOPs=2*(该层参数量)=16n^2$</li>
+</ul>
+</li>
+<li>小计-<strong>对于每一个token</strong><script type="math/tex; mode=display">FLOPs=6n^2+2n^2+16n^2+4nm=24n^2+4nm=2*(该层参数量)+4nm</script></li>
+<li>当m小于n或不是远大于n时，$4nm$可以忽略<script type="math/tex; mode=display">FLOPs\approx 2*(该层参数量)</script></li>
+</ul>
+</li>
+<li>对于L层decoder的模型<strong>对于每一个token</strong> $FLOPs=L<em>(24n^2+4nm)\approx 2</em>(参数量)$</li>
+<li>对于最终的输出层即$W_{final}^{n\times Vocab}$ 则<strong>对于每一个token</strong> $FLOPs=2<em>(n</em>V)=2*(参数量)$</li>
+<li><strong>合计-对于每一个token-前向传播阶段</strong>  <script type="math/tex; mode=display">FLOPs_{one-token}\approx2*(模型参数量)</script></li>
+</ul>
+<p>可以看出，因为模型中几乎所有运算都是矩阵相乘，而对于<strong>一个向量输入</strong>模型到得到结果，计算量就是2倍参数量，所以对于大模型，1个token计算量就是2倍参数量，则1个epoch的计算量就是</p>
+<script type="math/tex; mode=display">FLOPs_{前向1epo}=2*(模型参数量)*(Token数)</script><h3 id="3-2-大模型计算量-反向传播"><a href="#3-2-大模型计算量-反向传播" class="headerlink" title="3.2 大模型计算量-反向传播"></a>3.2 大模型计算量-反向传播</h3><p>反向传播计算量是前向传播的2倍即(<strong>为什么是2倍？</strong>)</p>
+<script type="math/tex; mode=display">FLOPs_{反向1epo}=2*FLOPs_{前向1epo}=4*(模型参数量)*(Token数)</script><p>所以整体训练即前向+反向过程</p>
+<script type="math/tex; mode=display">FLOPs_{训练1epo}=6*(模型参数量)*(Token数)</script><h3 id="3-3-大模型计算量-推理"><a href="#3-3-大模型计算量-推理" class="headerlink" title="3.3 大模型计算量-推理"></a>3.3 大模型计算量-推理</h3><p>推理阶段，假设prompt长度=p，最终输出长度=o<br>整体过程是<br>第1轮：$FLOPs_{step1}=2<em>(模型参数量)</em>(p)$<br>第2轮：$FLOPs_{step2}=2<em>(模型参数量)</em>(p+1)$<br>…<br>第o轮：$FLOPs_{stepo}=2<em>(模型参数量)</em>(p+o-1)$</p>
+<script type="math/tex; mode=display">FLOPs_{all}=2*(模型参数量)*\sum_{i=0}^{o-1}(p+i)\approx o*(2p+o)*(模型参数量)\approx o^2*(参数量)</script><p>可以看到，随着输出越多，计算量是平方上升的。<br>这里面是有很多计算浪费的<br>例如，每次计算得到的QKV矩阵，除了最后一行是因为新token的emb投影得到的新内容，其他行和上步骤的矩阵是一样的。所以，每一次计算QKV大部分计算是重复计算，而且，随着输出越来越长，重复计算率几乎是100%<br>基于此，就有了<a target="_blank" rel="noopener" href="https://github.com/harleyszhang/llm_note/blob/main/1-transformer_model/kv-cache%E5%8E%9F%E7%90%86%E5%8F%8A%E4%BC%98%E5%8C%96%E6%A6%82%E8%BF%B0.md"><strong>KV_cache优化技术:</strong></a></p>
+<ul>
+<li>对KV矩阵做缓存，这样每次就只计算最新的1行并拼接到KV中即可。  </li>
+<li>那Q呢？实际上因为我们每一轮推理的目的，是得到当前序列中最后1个token(即注意力结果矩阵的最后一行)对应的输出层的Logit输出，并以此得出下一个token，并将此token当作下一轮的输入。那么真正需要的就是Q的最后一行。</li>
+<li>整体流程分为<ul>
+<li>prefill：对于用户输入的prompt，按照训练时的流程喂入模型并得到KV缓存以及输出的第1个token</li>
+<li>decode：对于上一轮输出的token，通过投影计算得到$V_Q,V_K,V_V$3个向量，$V_K,V_V$分别拼接到KV缓存，$V_Q$对K矩阵相乘得到当前token的注意力分数，并通过Q得到最终注意力结果<strong>向量</strong>$V_{res}$</li>
+</ul>
+</li>
+<li>这样计算量就计算量就是线性的了：<script type="math/tex; mode=display">FLOPs = 2*(p+o)*(模型参数量)</script>节省计算，提高速度</li>
+</ul>
+<h3 id="3-4-decoder-only类型的大模型的mask-attention"><a href="#3-4-decoder-only类型的大模型的mask-attention" class="headerlink" title="3.4 decoder-only类型的大模型的mask-attention"></a>3.4 decoder-only类型的大模型的mask-attention</h3><p>考虑一个问题，当前大模型预训练任务都是“预测下一个词”,那么为什么还要用mask-attention呢？<br>当初transformer的decoder第一个attention是mask attention,因为当时的任务是翻译任务，训练时decoder的输入就是‘bos’字符拼接正确的翻译结果，然后使用mask，防止训练时第i个输入会使用到i之后token的信息。<br>而在预测下一个词任务时，输入时abcd预测输出e。那么训练时，输入之间就是要互相看的。<br>实际上，下一词任务的数据格式时这样的$X=(a,b,c,d,e),Y=(b,c,d,e,end)$<br>也只有这种数据格式才能充分发挥attention的并行优势。可以看到，任务虽然是预测下一词，但实际上数据格式像是序列翻译。<br>所以这种数据格式和模型搭配，可以充分发挥模型优势，所以mask就成了必须的。而且，这也与推理场景符合。</p>
+<h2 id="4-为什么反向传播计算量是正向传播2倍"><a href="#4-为什么反向传播计算量是正向传播2倍" class="headerlink" title="4. 为什么反向传播计算量是正向传播2倍"></a>4. 为什么反向传播计算量是正向传播2倍</h2><p>反向传播时，因为梯度的链式法则，并不是直接计算$ \frac{\partial L}{\partial W}$ 而是</p>
+<script type="math/tex; mode=display">\frac{\partial L}{\partial w^{l-1}}= \frac{\partial L}{\partial z^{l}}\cdot  \frac{\partial z^{l}}{\partial z^{l-1}}\cdot  \frac{\partial z^{l-1}}{\partial w^{l-1}}</script><p>这里面涉及到的矩阵乘法比单纯的前向传播矩阵乘法多一倍</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tagsz/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"><i class="fa fa-tag"></i> 大模型</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/12/23/2024-12-20-git-learn/" rel="prev" title="git 简单教程">
+      <i class="fa fa-chevron-left"></i> git 简单教程
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2024/12/28/2024-12-26-life-about-zaijianairen/" rel="next" title="再见爱人与再爱贱人">
+      再见爱人与再爱贱人 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%AE%97%E7%AE%97%E6%9C%AF"><span class="nav-number">1.</span> <span class="nav-text">大模型算算术</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0-%E5%9F%BA%E7%A1%80"><span class="nav-number">1.1.</span> <span class="nav-text">0. 基础</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%8F%82%E6%95%B0%E9%87%8F"><span class="nav-number">1.2.</span> <span class="nav-text">1. 参数量</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E4%BC%A0%E7%BB%9FTransformer-Decoder"><span class="nav-number">1.2.1.</span> <span class="nav-text">1.1 传统Transformer Decoder</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-1-%E5%8D%95%E4%B8%AADecoder"><span class="nav-number">1.2.1.1.</span> <span class="nav-text">1.1.1 单个Decoder</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-2-embedding%E5%B1%82"><span class="nav-number">1.2.1.2.</span> <span class="nav-text">1.1.2 embedding层</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E6%94%B9%E8%BF%9BTransformer-Decoder"><span class="nav-number">1.2.2.</span> <span class="nav-text">1.2 改进Transformer Decoder</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-1-Attention%E9%98%B6%E6%AE%B5-GQA%E6%8A%80%E6%9C%AF"><span class="nav-number">1.2.2.1.</span> <span class="nav-text">1.2.1 Attention阶段-GQA技术</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-2-FFN%E9%98%B6%E6%AE%B5-GLU%E9%97%A8%E6%8E%A7"><span class="nav-number">1.2.2.2.</span> <span class="nav-text">1.2.2 FFN阶段-GLU门控</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%8F%82%E6%95%B0%E9%87%8F%E4%B8%8E%E6%A8%A1%E5%9E%8B%E5%A4%A7%E5%B0%8F%E5%85%B3%E7%B3%BB%E2%80%94B%E4%B8%8EG%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">1.3.</span> <span class="nav-text">2. 参数量与模型大小关系—B与G的关系</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E8%AE%A1%E7%AE%97%E9%87%8F"><span class="nav-number">1.4.</span> <span class="nav-text">3. 计算量</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-FLOPs-%E7%9F%A9%E9%98%B5%E7%9B%B8%E4%B9%98%E8%AE%A1%E7%AE%97%E6%AC%A1%E6%95%B0"><span class="nav-number">1.4.1.</span> <span class="nav-text">3.1 FLOPs-矩阵相乘计算次数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E5%A4%A7%E6%A8%A1%E5%9E%8B%E8%AE%A1%E7%AE%97%E9%87%8F-%E5%89%8D%E5%90%91%E4%BC%A0%E6%92%AD"><span class="nav-number">1.4.2.</span> <span class="nav-text">3.2 大模型计算量-前向传播</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E5%A4%A7%E6%A8%A1%E5%9E%8B%E8%AE%A1%E7%AE%97%E9%87%8F-%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD"><span class="nav-number">1.4.3.</span> <span class="nav-text">3.2 大模型计算量-反向传播</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E5%A4%A7%E6%A8%A1%E5%9E%8B%E8%AE%A1%E7%AE%97%E9%87%8F-%E6%8E%A8%E7%90%86"><span class="nav-number">1.4.4.</span> <span class="nav-text">3.3 大模型计算量-推理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-decoder-only%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%A4%A7%E6%A8%A1%E5%9E%8B%E7%9A%84mask-attention"><span class="nav-number">1.4.5.</span> <span class="nav-text">3.4 decoder-only类型的大模型的mask-attention</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD%E8%AE%A1%E7%AE%97%E9%87%8F%E6%98%AF%E6%AD%A3%E5%90%91%E4%BC%A0%E6%92%AD2%E5%80%8D"><span class="nav-number">1.5.</span> <span class="nav-text">4. 为什么反向传播计算量是正向传播2倍</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Leonard"
+      src="/images/avatar2.jpg">
+  <p class="site-author-name" itemprop="name">Leonard</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">3</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/liliangjie91" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;liliangjie91" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Leonard</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+-->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>
