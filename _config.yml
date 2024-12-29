@@ -23,7 +23,7 @@ pretty_urls:
 # Directory
 source_dir: source
 public_dir: public
-tag_dir: tags
+tag_dir: tagsz
 archive_dir: archives
 category_dir: categories
 code_dir: downloads/code
@@ -105,3 +105,9 @@ deploy:
   repo: https://github.com/liliangjie91/liliangjie91.github.io.git
   branch: gh-pages
 
+mathjax: true
+
+# hexo-asset-path 配置
+# hexo_asset_path:
+#   enable: false # 启用插件
+#   prefix: /    # 配置图片路径前缀，通常为网站根目录
