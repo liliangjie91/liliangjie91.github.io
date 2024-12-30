@@ -6,11 +6,8 @@ tags: 大模型
 mathjax: true
 render: false
 ---
-
-# 大模型算算术
-[1. 大模型计算量](https://blog.csdn.net/sinat_39620217/article/details/136910771)  
-[2. 英伟达显卡比较](https://blog.csdn.net/sinat_39620217/article/details/135916437)  
-[3. 大模型算力推演优化实战](https://cloud.tencent.com/developer/article/2317901)
+**大模型中参数量是多少？如何计算？**
+**训练一个大模型需要多少计算量？**
 
 ## 0. 基础
 |参数格式|||
@@ -170,3 +167,8 @@ $$FLOPs = 2*(p+o)*(模型参数量)$$
 反向传播时，因为梯度的链式法则，并不是直接计算$ \frac{\partial L}{\partial W}$ 而是
 $$ \frac{\partial L}{\partial w^{l-1}}= \frac{\partial L}{\partial z^{l}}\cdot  \frac{\partial z^{l}}{\partial z^{l-1}}\cdot  \frac{\partial z^{l-1}}{\partial w^{l-1}}$$
 这里面涉及到的矩阵乘法比单纯的前向传播矩阵乘法多一倍
+
+# 参考
+[1. 大模型计算量](https://blog.csdn.net/sinat_39620217/article/details/136910771)  
+[2. 英伟达显卡比较](https://blog.csdn.net/sinat_39620217/article/details/135916437)  
+[3. 大模型算力推演优化实战](https://cloud.tencent.com/developer/article/2317901)
