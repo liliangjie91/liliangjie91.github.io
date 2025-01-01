@@ -1,10 +1,13 @@
 ---
 title: 论文阅读-Llama3
 date: 2024-12-30 16:26:47
-categories:
+categories: 
     - 技术
-tags:
+    - AI大模型
+tags: 
     - 大模型
+    - AI
+    - AGI
 description: 本文主要记录读Llama3论文时的流水账
 ---
 

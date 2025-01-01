@@ -1,9 +1,13 @@
 ---
 title: 论文阅读-Whisper
 date: 2024-12-30 17:21:33
-categories: 技术
+categories: 
+    - 技术
+    - AI大模型
 tags: 
     - 大模型
+    - AI
+    - 语音AI
 mathjax: true
 ---
 [论文：Robust Speech Recognition via Large-Scale Weak Supervision](https://arxiv.org/abs/2212.04356)

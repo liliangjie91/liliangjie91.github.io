@@ -1,8 +1,12 @@
 ---
 title: 大模型参数量计算
 date: 2024-12-25 22:16:53
-categories: 技术
-tags: 大模型
+categories: 
+    - 技术
+    - AI大模型
+tags: 
+    - 大模型
+    - AI
 mathjax: true
 render: false
 ---
