@@ -85,6 +85,7 @@ FLOPs：floating point operations 指的是浮点运算次数，一般特指乘�
 对于矩阵相乘$A\in R^{k\times m} * B\in R^{m\times n}$  
 $FLOPs = 2kmn$  
 当k=1时，即向量与矩阵相乘，最终得到$1\times n$的向量，其中计算了$m\times n$次乘法，以及$m\times n$次加法
+{% raw %}
 $$\begin{bmatrix}1 & 2 & 3\end{bmatrix}
 \begin{bmatrix}
  1 & 1\\
@@ -92,59 +93,71 @@ $$\begin{bmatrix}1 & 2 & 3\end{bmatrix}
  3 & 3
 \end{bmatrix}=\begin{bmatrix}1*1+2*2+3*3 & ···\end{bmatrix}=
 \begin{bmatrix} 1+4+9 & ···\end{bmatrix}=\begin{bmatrix}14 & 14\end{bmatrix}$$  
+{% endraw %}
 以上例子，最终结果每个元素计算了3次乘法，3次加法(3个元素相加)  
 总计算次数$=2nm=2*(3+3)=12$  
 
 ### 3.2 大模型计算量-前向传播
-- 在简单MLP网络前向传播中，对于**1个样本(1个token)**$X\in R^{1\times n}$ 在经过1个3层的网络$\left \{W_1^{n\times m},W_2^{m\times k},W_3^{k\times o}  \right \} $时，对于bias，其数量级较小可以忽略，则
+- 在简单MLP网络前向传播中，对于**1个样本(1个token)**$X\in R^{1\times n}$ 在经过1个3层的网络
+{% raw %}
+$\left \{W_1^{n\times m},W_2^{m\times k},W_3^{k\times o}  \right \}$
+{% endraw %}
+时，对于bias，其数量级较小可以忽略，则
 $$FLOPs=2*(nm+mk+ko)=2*(模型参数量)$$
 - 在self-Attention前向传播中，对于**1个seq(设有m个token)**，则输入$X\in R^{m\times n}$  
     * 投影层
-        * 8头投影$\left \{W_{Q1}^{n\times \frac{n}{8}},W_{K1}^{n\times \frac{n}{8}},W_{V1}^{n\times \frac{n}{8}},...,W_{V8}^{n\times \frac{n}{8}}  \right \} $
-        * 计算量： $$FLOPs=8*3*(2*m*n*\frac{n}{8})=m*2*3*n^2=m*2*(该层参数量)$$
+        * 8头投影
+        {% raw %}
+        $\left \{W_{Q1}^{n\times \frac{n}{8}},W_{K1}^{n\times \frac{n}{8}},W_{V1}^{n\times \frac{n}{8}},...,W_{V8}^{n\times \frac{n}{8}}  \right \} $
+        {% endraw %}
+        * 计算量： {% raw %}$$FLOPs=8*3*(2*m*n*\frac{n}{8})=m*2*3*n^2=m*2*(该层参数量)$${% endraw %}
         * 所以对于每一个token，投影层$FLOPs=2*(该层参数量)=6n^2$
     * self_Attetion  
-    {% raw %}
-        * 8头自注意力$\left \{{Q_1}^{m\times \frac{n}{8}},{K_1}^{m\times \frac{n}{8}},{V_1}^{m\times \frac{n}{8}},...,{V_8}^{m\times \frac{n}{8}}  \right \} $
+    
+        * 8头自注意力
+        {% raw %}
+        $\left \{{Q_1}^{m\times \frac{n}{8}},{K_1}^{m\times \frac{n}{8}},{V_1}^{m\times \frac{n}{8}},...,{V_8}^{m\times \frac{n}{8}}  \right \} $
         {% endraw %}
-        * 计算注意力分数$score_{atten}=QK^T$ 则 $$FLOPs=8*2*(m*\frac{n}{8}*m)=m*2*(m*n)$$
-        * 计算输出结果$res=score_{atten} \cdot V $ 则 $$FLOPs = 8*2*(m*m*\frac{n}{8})=m*2*(m*n)$$
-        * 所以对于每一个token，$FLOPs=4*(m*n)$
+        * 计算注意力分数$score_{atten}=QK^T$ 则 $$FLOPs=8 * 2 * (m * \frac{n}{8} * m)=m * 2 * (m * n)$$
+        * 计算输出结果$res=score_{atten} \cdot V $ 则 $$FLOPs = 8 * 2 * (m * m * \frac{n}{8})=m * 2 * (m * n)$$
+        * 所以对于每一个token，$FLOPs=4 * (m * n)$
     * Attention 输出投影层
         * 单层前向 $W_{O}^{n\times n}$
-        * 计算量： $$FLOPs = 2*m*n*n = m*2*(该层参数量)$$
+        * 计算量： {% raw %}$$FLOPs = 2*m*n*n = m*2*(该层参数量)$${% endraw %}
         * 所以对于每一个token，$FLOPs=2*(该层参数量)=2n^2$
     * FFN层
-        * 双层前向 $\left \{W_{ffn1}^{n\times 4n},W_{ffn2}^{n\times 4n}  \right \} $
-        * 计算量： $$FLOPs = 2*m*(n*4n+n*4n) = m*2*(该层参数量)$$
+        * 双层前向 {% raw %}$\left \{W_{ffn1}^{n\times 4n},W_{ffn2}^{n\times 4n}  \right \} ${% endraw %}
+        * 计算量： {% raw %}$$FLOPs = 2*m*(n*4n+n*4n) = m*2*(该层参数量)$${% endraw %}
         * 所以对于每一个token，$FLOPs=2*(该层参数量)=16n^2$
     * 小计-**对于每一个token**
     $$FLOPs=6n^2+2n^2+16n^2+4nm=24n^2+4nm=2*(该层参数量)+4nm $$  
     * 当m小于n或不是远大于n时，$4nm$可以忽略
     $$FLOPs\approx 2*(该层参数量)$$
-- 对于L层decoder的模型**对于每一个token** $FLOPs=L*(24n^2+4nm)\approx 2*(参数量)$
-- 对于最终的输出层即$W_{final}^{n\times Vocab}$ 则**对于每一个token** $FLOPs=2*(n*V)=2*(参数量)$
+- 对于L层decoder的模型**对于每一个token** $FLOPs=L * (24n^2+4nm)\approx 2 * (参数量)$
+- 对于最终的输出层即$W_{final}^{n\times Vocab}$ 则**对于每一个token** $FLOPs=2 * (n * V)=2 * (参数量)$
 - **合计-对于每一个token-前向传播阶段**  
-$$FLOPs_{one-token}\approx2*(模型参数量)$$
+$$FLOPs_{one-token}\approx2 * (模型参数量)$$
 
 可以看出，因为模型中几乎所有运算都是矩阵相乘，而对于**一个向量输入**模型到得到结果，计算量就是2倍参数量，所以对于大模型，1个token计算量就是2倍参数量，则1个epoch的计算量就是
-$$FLOPs_{前向1epo}=2*(模型参数量)*(Token数)$$
+$$FLOPs_{前向1epo}=2 * (模型参数量) * (Token数)$$
 
 ### 3.2 大模型计算量-反向传播
 反向传播计算量是前向传播的2倍即(**为什么是2倍？**)
-$$FLOPs_{反向1epo}=2*FLOPs_{前向1epo}=4*(模型参数量)*(Token数)$$
+$$FLOPs_{反向1epo}=2 * FLOPs_{前向1epo}=4 * (模型参数量) * (Token数)$$
 所以整体训练即前向+反向过程
-$$FLOPs_{训练1epo}=6*(模型参数量)*(Token数)$$
+$$FLOPs_{训练1epo}=6 * (模型参数量) * (Token数)$$
 
 
 ### 3.3 大模型计算量-推理
 推理阶段，假设prompt长度=p，最终输出长度=o
 整体过程是  
-第1轮：$FLOPs_{step1}=2*(模型参数量)*(p)$  
-第2轮：$FLOPs_{step2}=2*(模型参数量)*(p+1)$  
+第1轮：$FLOPs_{step1}=2 * (模型参数量) * (p)$  
+
+第2轮：$FLOPs_{step2}=2 * (模型参数量) * (p+1)$  
+
 ...  
-第o轮：$FLOPs_{stepo}=2*(模型参数量)*(p+o-1)$
-$$FLOPs_{all}=2*(模型参数量)*\sum_{i=0}^{o-1}(p+i)\approx o*(2p+o)*(模型参数量)\approx o^2*(参数量) $$
+第o轮：$FLOPs_{stepo}=2 * (模型参数量) * (p+o-1)$
+$$FLOPs_{all}=2 * (模型参数量) * \sum_{i=0}^{o-1}(p+i)\approx o * (2p+o) * (模型参数量)\approx o^2 * (参数量) $$
 
 可以看到，随着输出越多，计算量是平方上升的。  
 这里面是有很多计算浪费的
@@ -156,7 +169,7 @@ $$FLOPs_{all}=2*(模型参数量)*\sum_{i=0}^{o-1}(p+i)\approx o*(2p+o)*(模型�
     - prefill：对于用户输入的prompt，按照训练时的流程喂入模型并得到KV缓存以及输出的第1个token
     - decode：对于上一轮输出的token，通过投影计算得到$V_Q,V_K,V_V$3个向量，$V_K,V_V$分别拼接到KV缓存，$V_Q$对K矩阵相乘得到当前token的注意力分数，并通过Q得到最终注意力结果**向量**$V_{res}$
 - 这样计算量就计算量就是线性的了：
-$$FLOPs = 2*(p+o)*(模型参数量)$$
+$$FLOPs = 2 * (p+o) * (模型参数量)$$
 节省计算，提高速度
 
 ### 3.4 decoder-only类型的大模型的mask-attention
