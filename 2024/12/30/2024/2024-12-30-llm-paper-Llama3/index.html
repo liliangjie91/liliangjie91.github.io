@@ -238,7 +238,6 @@
       
         <p><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2407.21783">论文：The Llama 3 Herd of Models</a></p>
 <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>模型：<br>405B参数， dense transformer<br>window：128k</p>
-<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -248,8 +247,7 @@
 <th>405B</th>
 </tr>
 </thead>
-<tbody>
-<tr>
+<tbody><tr>
 <td>layers</td>
 <td>32</td>
 <td>80</td>
@@ -303,9 +301,7 @@
 <td>RoPE(500k)</td>
 <td>RoPE(500k)</td>
 </tr>
-</tbody>
-</table>
-</div>
+</tbody></table>
 <p>Llama2 使用了2T tokens 即2万亿个token<br>Llama3 使用了超过15T tokens</p>
 <h2 id="1-introduction"><a href="#1-introduction" class="headerlink" title="1. introduction"></a>1. introduction</h2><p><strong>大模型训练流程：</strong></p>
 <ol>
@@ -321,14 +317,13 @@
 </ol>
 <p><strong>获取高质量大模型的3个关键点</strong></p>
 <ol>
-<li>Data：相比之前的模型，llama3使用的数据质和量均有提高，1.8T—&gt;15T</li>
+<li>Data：相比之前的模型，llama3使用的数据质和量均有提高，1.8T–&gt;15T</li>
 <li>Scale：相比llama2，模型大了50倍</li>
 <li>Managing complexity：管理复杂度：使用标准Transformer而非MOE；使用简单强化学习方法而非复杂方法</li>
 </ol>
 <h2 id="2-General-Overview"><a href="#2-General-Overview" class="headerlink" title="2. General Overview"></a>2. General Overview</h2><p><strong>训练过程</strong></p>
-<h3 id="pre-training"><a href="#pre-training" class="headerlink" title="pre-training"></a>pre-training</h3><p><code>we pre-train a model with 405B parameters on 15.6T tokens using a
-context window of 8K tokens.</code></p>
-<p>next stage 8k—&gt;128k</p>
+<h3 id="pre-training"><a href="#pre-training" class="headerlink" title="pre-training"></a>pre-training</h3><p><code>we pre-train a model with 405B parameters on 15.6T tokens using a context window of 8K tokens.</code></p>
+<p>next stage 8k–&gt;128k</p>
 <h3 id="post-training"><a href="#post-training" class="headerlink" title="post-training"></a>post-training</h3><ol>
 <li>多轮 SFT+DPO</li>
 <li>结合其他能力</li>
@@ -395,9 +390,9 @@ context window of 8K tokens.</code></p>
 <h3 id="4-1-Modeling"><a href="#4-1-Modeling" class="headerlink" title="4.1 Modeling"></a>4.1 Modeling</h3><ol>
 <li>使用人工注释数据在最终预训练模型上，训练Reward Model</li>
 <li>使用SFT</li>
-<li>使用DPO 方法<h3 id="4-2-Post-training-Data"><a href="#4-2-Post-training-Data" class="headerlink" title="4.2 Post-training Data"></a>4.2 Post-training Data</h3></li>
+<li>使用DPO 方法</li>
 </ol>
-<h4 id="偏好数据"><a href="#偏好数据" class="headerlink" title="偏好数据"></a>偏好数据</h4><ul>
+<h3 id="4-2-Post-training-Data"><a href="#4-2-Post-training-Data" class="headerlink" title="4.2 Post-training Data"></a>4.2 Post-training Data</h3><h4 id="偏好数据"><a href="#偏好数据" class="headerlink" title="偏好数据"></a>偏好数据</h4><ul>
 <li>后训练数据级别：edited &gt; chosen &gt; rejected</li>
 <li>注释者为chosen选项评级，共4级，相对于rejected的等级:<ul>
 <li>significantly better</li>
@@ -517,20 +512,20 @@ context window of 8K tokens.</code></p>
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">31</span>
+          <span class="site-state-item-count">32</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-count">5</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">28</span>
+        <span class="site-state-item-count">29</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -572,13 +567,13 @@ context window of 8K tokens.</code></p>
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">59k</span>
+    <span title="站点总字数">61k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">3:36</span>
+    <span title="站点阅读时长">3:41</span>
 </div>
 
 <!--
