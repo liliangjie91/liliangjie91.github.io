@@ -120,3 +120,13 @@ mathjax: true
 # archive:
 #   per_page: 20 # 每页显示的日志数量，设置为 0 表示显示所有日志
 #   order_by: -date # 日志排序方式，默认为按日期降序
+
+symbols_count_time:
+  symbols: true
+  time: true
+  total_symbols: true
+  total_time: true
+  exclude_codeblock: false
+  awl: 2
+  wpm: 275
+  suffix: "mins."
