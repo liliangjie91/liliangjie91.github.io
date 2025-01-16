@@ -5,7 +5,7 @@ date: 2025-01-08 20:23:18
 categories:
     - 技术
     - AI大模型
-tags: [大模型演进, AI模型, NLP, RNN, seq2seq]
+tags: [大模型演进, AI模型, NLP, RNN, seq2seq, LSTM, GRU]
 ---
 
 # 编码器解码器结构
