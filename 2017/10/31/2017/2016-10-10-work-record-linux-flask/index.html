@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Ubuntu16.04+Anaconda2+nginx+gunicorn+flask+supervisor 概述：把Python的Flask框架开发的Web应用，在Ubuntu上用gunicorn部署起来，用supervisor实现进程守护，用nginx实现代理和负载均衡。其中的python使用的是anaconda2 这个集成包里的。并在anaconda创建的虚拟环境中运行应用。关于虚拟环境的解释">
+<meta property="og:type" content="article">
+<meta property="og:title" content="古早博文-Linux下部署Flask项目——Ubuntu+Flask+Gunicorn+Supervisor+Nginx">
+<meta property="og:url" content="http://example.com/2017/10/31/2017/2016-10-10-work-record-linux-flask/index.html">
+<meta property="og:site_name" content="LeonardWo">
+<meta property="og:description" content="Ubuntu16.04+Anaconda2+nginx+gunicorn+flask+supervisor 概述：把Python的Flask框架开发的Web应用，在Ubuntu上用gunicorn部署起来，用supervisor实现进程守护，用nginx实现代理和负载均衡。其中的python使用的是anaconda2 这个集成包里的。并在anaconda创建的虚拟环境中运行应用。关于虚拟环境的解释">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/image/image-20161010.png">
+<meta property="og:image" content="http://example.com/image/image-20161010-Gunicorn.png">
+<meta property="article:published_time" content="2017-10-31T15:13:23.000Z">
+<meta property="article:modified_time" content="2025-01-16T17:00:29.353Z">
+<meta property="article:author" content="Leonard">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="Flask">
+<meta property="article:tag" content="Web应用">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/image/image-20161010.png">
+
+<link rel="canonical" href="http://example.com/2017/10/31/2017/2016-10-10-work-record-linux-flask/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>古早博文-Linux下部署Flask项目——Ubuntu+Flask+Gunicorn+Supervisor+Nginx | LeonardWo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">LeonardWo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">wowowowo</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2017/10/31/2017/2016-10-10-work-record-linux-flask/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar2.jpg">
+      <meta itemprop="name" content="Leonard">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LeonardWo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          古早博文-Linux下部署Flask项目——Ubuntu+Flask+Gunicorn+Supervisor+Nginx
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-31 23:13:23" itemprop="dateCreated datePublished" datetime="2017-10-31T23:13:23+08:00">2017-10-31</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-01-17 01:00:29" itemprop="dateModified" datetime="2025-01-17T01:00:29+08:00">2025-01-17</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">技术</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>9 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Ubuntu16.04+Anaconda2+nginx+gunicorn+flask+supervisor</p>
+<h1 id="概述："><a href="#概述：" class="headerlink" title="概述："></a>概述：</h1><p>把Python的Flask框架开发的Web应用，在Ubuntu上用gunicorn部署起来，用supervisor实现进程守护，用nginx实现代理和负载均衡。其中的python使用的是anaconda2 这个集成包里的。并在anaconda创建的虚拟环境中运行应用。关于虚拟环境的解释见下文。</p>
+<p><strong>当然，你也可以不用创建虚拟环境，直接在个人用户下执行，只需将下文中虚拟环境部分改在真实环境中执行即可。</strong></p>
+<h1 id="第一步：安装anaconda2"><a href="#第一步：安装anaconda2" class="headerlink" title="第一步：安装anaconda2"></a>第一步：安装anaconda2</h1><h2 id="下载Anaconda2的-sh安装包"><a href="#下载Anaconda2的-sh安装包" class="headerlink" title="下载Anaconda2的.sh安装包"></a>下载Anaconda2的.sh安装包</h2><p>Anaconda的官网在这里<a target="_blank" rel="noopener" href="https://www.continuum.io/downloads">Download Anaconda Now!</a>。与Python相对应，Anaconda的版本分为Anaconda2和Anaconda3，大家可以自行下载日常常用的版本，提供32位和64位下载。但下载速度太慢，建议用国内镜像：<br>下载地址 <a target="_blank" rel="noopener" href="https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/">Index of &#x2F;anaconda&#x2F;archive&#x2F;</a>选择相应的版本进行下载就好。<br>linux 下载下来是一个*.sh文件</p>
+<h2 id="安装anaconda并配置源"><a href="#安装anaconda并配置源" class="headerlink" title="安装anaconda并配置源"></a>安装anaconda并配置源</h2><p>安装Anaconda建议不要用root用户，即安装在自己的个人家目录下即可：<br><code>bash *.sh</code><br>安装一路按确认Yes即可。安装完成之后会在家目录下出现文件夹：<br><code>~/Anaconda2/</code> （以anaconda2为例）<br>  注意安装过程中最后会问是否配置环境变量，记得选择yes，如果错过了，则需要<strong>手动配置环境变量</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> ‘<span class="built_in">export</span> PATH=<span class="string">&quot;~/anaconda2/bin:<span class="variable">$PATH</span>&quot;</span>’ &gt; ~/.bashrc</span><br><span class="line"><span class="built_in">source</span> ~/.bashrc</span><br></pre></td></tr></table></figure>
+<p>在anaconda中，conda install 命令也可以下载python库，类似于pip<br>首先，由于默认的源地址在国外较慢，我们需要修改其包管理镜像为国内源。<br><a target="_blank" rel="noopener" href="https://mirrors.tuna.tsinghua.edu.cn/help/anaconda/">Tsinghua Open Source Mirror</a><br>简单来说就是在终端中运行这两个命令就好了：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/</span><br><span class="line">conda config --<span class="built_in">set</span> show_channel_urls <span class="built_in">yes</span></span><br></pre></td></tr></table></figure>
+<p>执行完上述命令后，会生成<del>&#x2F;.condarc(Linux&#x2F;Mac)或C:\Users\USER_NAME.condarc文件，记录着我们对conda的配置，直接手动创建、编辑该文件是相同的效果。<br>而pip的源修改如下：修改</del>&#x2F;.pip&#x2F;pip.conf，没有则创建</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[<span class="string">global</span>]</span><br><span class="line"><span class="string">index-url</span> <span class="string">=</span> <span class="string">http://pypi.douban.com/simple</span></span><br><span class="line"><span class="string">trusted-host</span> <span class="string">=</span> <span class="string">pypi.douban.com</span></span><br><span class="line"><span class="string">timeout</span> <span class="string">=</span> <span class="number">120</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="第二步：用anaconda开启一个虚拟环境"><a href="#第二步：用anaconda开启一个虚拟环境" class="headerlink" title="第二步：用anaconda开启一个虚拟环境"></a>第二步：用anaconda开启一个虚拟环境</h1><blockquote>
+<p>虚拟环境是一个将不同项目所需求的依赖分别放在独立的地方的一个工具，它给这些工程创建虚拟的Python环境。它解决了“项目X依赖于版本1.x，而项目Y需要项目4.x”的两难问题，而且使你的全局site-packages目录保持干净和可管理。比如，你可以工作在一个需求Django 1.3的工程，同时维护一个需求Django 1.0的工程。</p>
+</blockquote>
+<h2 id="创建虚拟环境"><a href="#创建虚拟环境" class="headerlink" title="创建虚拟环境"></a>创建虚拟环境</h2><p>python中可以用virtualenv创建虚拟环境，而我们安装的anaconda也有这个功能，创建一个名为 test1 的虚拟环境，并为这个虚拟环境<strong>添加flask库</strong>  </p>
+<p><code>conda create -n test1 flask</code></p>
+<h2 id="激活虚拟环境"><a href="#激活虚拟环境" class="headerlink" title="激活虚拟环境"></a>激活虚拟环境</h2><p><code>source activate test1</code></p>
+<p>进入虚拟环境之后，命令行用户名前会出现一个括号，括号内是该虚拟环境的名字，表示这是在虚拟环境中</p>
+<h1 id="第三步：用flask框架构建一个简单的web应用"><a href="#第三步：用flask框架构建一个简单的web应用" class="headerlink" title="第三步：用flask框架构建一个简单的web应用"></a>第三步：用flask框架构建一个简单的web应用</h1><p> 新建一个目录，webtest1，内新建一个python文件webtest.py</p>
+<p>直接vim编辑</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="comment">#webtest.py</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask,request</span><br><span class="line">app = Flask(__name__)</span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/&#x27;</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">home</span>():</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;home&quot;</span></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">      app.run(debug=<span class="literal">False</span>)</span><br></pre></td></tr></table></figure>
+
+<p>此时运行该py文件，即开启了该web应用，如图所示，输入<a target="_blank" rel="noopener" href="http://127.0.0.1:5000/%EF%BC%8C%E5%8D%B3%E5%8F%AF%E6%98%BE%E7%A4%BAhome%E7%95%8C%E9%9D%A2">http://127.0.0.1:5000/，即可显示home界面</a></p>
+<p>此时，只能本地访问，如果要实现局域网访问，则需修改webtest.py：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python</span></span><br><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="comment">#webtest.py</span></span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask,request</span><br><span class="line">app = Flask(__name__)</span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">&#x27;/&#x27;</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">home</span>():</span><br><span class="line">      <span class="keyword">return</span> <span class="string">&quot;home&quot;</span></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">      app.debug=<span class="literal">False</span></span><br><span class="line">      app.run(host=<span class="string">&#x27;0.0.0.0&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>此时，在同局域网的电脑浏览器中输入运行该代码的机器ip:5000，则显示home界面</p>
+<p><img src="/image/image-20161010.png" alt="局域网浏览器浏览结果"><br><strong>截止这一步，其实我们简单完成了webapi的部署。下面的步骤都是辅助性的，目的在于提高性能，让这个web应用不容易崩。</strong></p>
+<h1 id="第四步：安装运行gunicorn"><a href="#第四步：安装运行gunicorn" class="headerlink" title="第四步：安装运行gunicorn"></a>第四步：安装运行gunicorn</h1><p>gunicorn是一个WSGI服务器，类似于JAVA中的tomcat。上一步中我们使用的是flask 自带的服务器，完成了 web 服务的启动。生产环境下，flask 自带的服务器，无法满足性能要求。我们这里采用 gunicorn 做 wsgi容器，用来部署 python。</p>
+<h2 id="在虚拟环境下安装gunicorn"><a href="#在虚拟环境下安装gunicorn" class="headerlink" title="在虚拟环境下安装gunicorn"></a>在虚拟环境下安装gunicorn</h2><p><code>pip install gunicorn</code></p>
+<h2 id="用gunicorn运行web应用"><a href="#用gunicorn运行web应用" class="headerlink" title="用gunicorn运行web应用"></a>用gunicorn运行web应用</h2><p><code>gunicorn tmp/webtest1/webtest:app</code><br>webtest对应的是py文件名，app对应的是文件中Flask的实现名，这里默认开启的是8000端口。</p>
+<p><img src="/image/image-20161010-Gunicorn.png" alt="Gunicorn运行"><br>这里使用了-b 0.0.0.0:8001 指定了端口，因为默认的8000端口已被占用</p>
+<h1 id="第五步：安装配置nginx"><a href="#第五步：安装配置nginx" class="headerlink" title="第五步：安装配置nginx"></a>第五步：安装配置nginx</h1><p>   <a target="_blank" rel="noopener" href="https://www.zhihu.com/question/32212996">什么是nginx，nginx和gunicorn的区别</a></p>
+<blockquote>
+<p>nginx是一个 HTTP 服务器， 它关心的是 HTTP 协议层面的传输和访问控制，所以在 Apache&#x2F;Nginx 上你可以看到代理、负载均衡等功能。客户端通过 HTTP Server 访问服务器上存储的资源（HTML 文件、图片文件等等）。通过 CGI 技术，也可以将处理过的内容通过 HTTP Server 分发，但是一个 HTTP Server 始终只是把服务器上的文件如实的通过 HTTP 协议传输给客户端。<br>而上面所说的gunicorn，是应用服务器，是一个应用执行的容器。它首先需要支持开发语言的 Runtime（对于 Tomcat 来说就是 Java，对gunicorn来说就是python），保证应用能够在应用服务器上正常运行。其次，需要支持应用相关的规范，例如类库、安全方面的特性。对于 Tomcat 来说，就是需要提供 JSP&#x2F;Sevlet 运行需要的标准类库、Interface 等。为了方便，应用服务器往往也会集成 HTTP Server 的功能，但是不如专业的 HTTP Server 那么强大，所以应用服务器往往是运行在 HTTP Server 的背后，执行应用，将动态的内容转化为静态的内容之后，通过 HTTP Server 分发到客户端。<br>                    作者：Leh<br>                    链接：<a target="_blank" rel="noopener" href="https://www.zhihu.com/question/32212996/answer/55169095">https://www.zhihu.com/question/32212996/answer/55169095</a><br>                    来源：知乎<br>                    著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处</p>
+</blockquote>
+<h2 id="安装nginx"><a href="#安装nginx" class="headerlink" title="安装nginx"></a>安装nginx</h2><p><code>sudo apt-get install nginx</code></p>
+<p>nginx的配置文件在 &#x2F;etc&#x2F;nginx&#x2F;sites-available&#x2F;里，默认的是default文件，如果没有，则创建default。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">server</span> &#123;</span><br><span class="line">  <span class="string">listen</span> <span class="number">80</span><span class="string">;</span></span><br><span class="line">  <span class="string">server_name</span> <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span><span class="string">;</span></span><br><span class="line"></span><br><span class="line">  <span class="string">location</span> <span class="string">/</span> &#123;</span><br><span class="line">      <span class="string">try_files</span> <span class="string">$uri</span> <span class="string">@gunicorn_proxy;</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="string">location</span> <span class="string">@gunicorn_proxy</span> &#123;</span><br><span class="line">      <span class="string">proxy_set_header</span> <span class="string">X-Forwarded-For</span> <span class="string">$proxy_add_x_forwarded_for;</span></span><br><span class="line">      <span class="string">proxy_set_header</span> <span class="string">Host</span> <span class="string">$http_host;</span></span><br><span class="line">      <span class="string">proxy_redirect</span> <span class="string">off;</span></span><br><span class="line">      <span class="string">proxy_pass</span> <span class="string">http://127.0.0.1:8000;</span></span><br><span class="line">      <span class="string">proxy_connect_timeout</span> <span class="string">500s;</span></span><br><span class="line">      <span class="string">proxy_read_timeout</span> <span class="string">500s;</span></span><br><span class="line">      <span class="string">proxy_send_timeout</span> <span class="string">500s;</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="启动nginx或重启nginx-restart"><a href="#启动nginx或重启nginx-restart" class="headerlink" title="启动nginx或重启nginx (restart)"></a>启动nginx或重启nginx (restart)</h2><p><code>service nginx start</code></p>
+<p>关于nginx的详细配置可参考如下：<br><a target="_blank" rel="noopener" href="http://www.jianshu.com/p/fd25a9c008a0">http://www.jianshu.com/p/fd25a9c008a0</a><br><a target="_blank" rel="noopener" href="http://www.jianshu.com/p/3e2b9964c279">http://www.jianshu.com/p/3e2b9964c279</a></p>
+<h1 id="第六步：supervisor进程守护"><a href="#第六步：supervisor进程守护" class="headerlink" title="第六步：supervisor进程守护"></a>第六步：supervisor进程守护</h1><p>严重推荐这篇介绍 ：<a target="_blank" rel="noopener" href="http://liyangliang.me/posts/2015/06/using-supervisor/">使用 supervisor 管理进程</a></p>
+<blockquote>
+<p>Supervisor (<a target="_blank" rel="noopener" href="http://supervisord.org/">http://supervisord.org</a>) 是一个用 Python 写的进程管理工具，可以很方便的用来启动、重启、关闭进程（不仅仅是 Python 进程）。<br>     除了对单个进程的控制，还可以同时启动、关闭多个进程，比如很不幸的服务器出问题导致所有应用程序都被杀死，此时可以用 supervisor 同时启动所有应用程序而不是一个一个地敲命令启动。</p>
+</blockquote>
+<h2 id="安装supervisor（不在虚拟环境里）"><a href="#安装supervisor（不在虚拟环境里）" class="headerlink" title="安装supervisor（不在虚拟环境里）"></a>安装supervisor（不在虚拟环境里）</h2><p><code>pip install supervisor</code>   或者使用  <code>sudo apt-get install supervisor</code></p>
+<h2 id="配置文件-supervisor-conf"><a href="#配置文件-supervisor-conf" class="headerlink" title="配置文件 supervisor.conf"></a>配置文件 supervisor.conf</h2><p>用以下命令可以把默认的配置生成到制定位置<br><code>echo_supervisord_conf &gt; /your_file_path/supervisord.conf</code><br><strong>如果是使用apt-get安装的，那么 这个supervisord.conf文件会在 &#x2F;etc&#x2F;supervisor&#x2F;文件夹下自动生成</strong></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">;</span> <span class="string">supervisor</span> <span class="string">config</span> <span class="string">file</span></span><br><span class="line"></span><br><span class="line">[<span class="string">unix_http_server</span>]</span><br><span class="line"><span class="string">file=/var/run/supervisor.sock</span>   <span class="string">;</span> <span class="string">(the</span> <span class="string">path</span> <span class="string">to</span> <span class="string">the</span> <span class="string">socket</span> <span class="string">file)</span></span><br><span class="line"><span class="string">chmod=0700</span>                       <span class="string">;</span> <span class="string">sockef</span> <span class="string">file</span> <span class="string">mode</span> <span class="string">(default</span> <span class="number">0700</span><span class="string">)</span></span><br><span class="line"></span><br><span class="line">[<span class="string">supervisord</span>]</span><br><span class="line"><span class="string">logfile=/var/log/supervisor/supervisord.log</span> <span class="string">;</span> <span class="string">(main</span> <span class="string">log</span> <span class="string">file;default</span> <span class="string">$CWD/supervisord.log)</span></span><br><span class="line"><span class="string">pidfile=/var/run/supervisord.pid</span> <span class="string">;</span> <span class="string">(supervisord</span> <span class="string">pidfile;default</span> <span class="string">supervisord.pid)</span></span><br><span class="line"><span class="string">childlogdir=/var/log/supervisor</span>            <span class="string">;</span> <span class="string">(&#x27;AUTO&#x27;</span> <span class="string">child</span> <span class="string">log</span> <span class="string">dir,</span> <span class="string">default</span> <span class="string">$TEMP)</span></span><br><span class="line"></span><br><span class="line">[<span class="string">rpcinterface:supervisor</span>]</span><br><span class="line"><span class="string">supervisor.rpcinterface_factory</span> <span class="string">=</span> <span class="string">supervisor.rpcinterface:make_main_rpcinterface</span></span><br><span class="line"></span><br><span class="line">[<span class="string">supervisorctl</span>]</span><br><span class="line"><span class="string">serverurl=unix:///var/run/supervisor.sock</span> <span class="string">;</span> <span class="string">use</span> <span class="string">a</span> <span class="string">unix://</span> <span class="string">URL</span>  <span class="string">for</span> <span class="string">a</span> <span class="string">unix</span> <span class="string">socket</span></span><br><span class="line"></span><br><span class="line">[<span class="string">include</span>]</span><br><span class="line"><span class="string">files</span> <span class="string">=</span> <span class="string">/etc/supervisor/conf.d/*.conf</span></span><br></pre></td></tr></table></figure>
+
+<p>配置文件最后一行，设置的是要运行的进程的配置文件路径，可见只要后缀名是conf即可被识别，于是新建文件<code>/etc/supervisor/conf.d/webapi.conf</code></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">[<span class="string">program:webtest</span>]</span><br><span class="line"><span class="string">directory</span> <span class="string">=</span> <span class="string">/home/bigdata/Project_2017/webapi/</span> <span class="string">;</span> <span class="string">程序的启动目录</span></span><br><span class="line"><span class="string">command</span> <span class="string">=/home/bigdata/anaconda2/bin/gunicorn</span> <span class="string">-k</span> <span class="string">gevent</span> <span class="string">-t</span> <span class="number">300</span> <span class="string">run:app</span>  <span class="string">;</span> <span class="string">启动命令，可以看出与手动在命令行启动的命令是一样的</span></span><br><span class="line"><span class="string">autostart</span> <span class="string">=</span> <span class="literal">true</span>     <span class="string">;</span> <span class="string">在</span> <span class="string">supervisord</span> <span class="string">启动的时候也自动启动</span></span><br><span class="line"><span class="string">startsecs</span> <span class="string">=</span> <span class="number">5</span>        <span class="string">;</span> <span class="string">启动</span> <span class="number">5</span> <span class="string">秒后没有异常退出，就当作已经正常启动了</span></span><br><span class="line"><span class="string">autorestart</span> <span class="string">=</span> <span class="literal">true</span>   <span class="string">;</span> <span class="string">程序异常退出后自动重启</span></span><br><span class="line"><span class="string">startretries</span> <span class="string">=</span> <span class="number">3</span>     <span class="string">;</span> <span class="string">启动失败自动重试次数，默认是</span> <span class="number">3</span></span><br><span class="line"><span class="string">user</span> <span class="string">=</span> <span class="string">root</span>          <span class="string">;</span> <span class="string">用哪个用户启动</span></span><br><span class="line"><span class="string">redirect_stderr</span> <span class="string">=</span> <span class="literal">true</span>  <span class="string">;</span> <span class="string">把</span> <span class="string">stderr</span> <span class="string">重定向到</span> <span class="string">stdout，默认</span> <span class="literal">false</span></span><br><span class="line"><span class="string">stdout_logfile_maxbytes</span> <span class="string">=</span> <span class="string">20MB</span>  <span class="string">;</span> <span class="string">stdout</span> <span class="string">日志文件大小，默认</span> <span class="string">50MB</span></span><br><span class="line"><span class="string">stdout_logfile_backups</span> <span class="string">=</span> <span class="number">20</span>     <span class="string">;</span> <span class="string">stdout</span> <span class="string">日志文件备份数</span></span><br><span class="line"><span class="string">;</span> <span class="string">stdout</span> <span class="string">日志文件，需要注意当指定目录不存在时无法正常启动，所以需要手动创建目录（supervisord</span> <span class="string">会自动创建日志文件）</span></span><br><span class="line"><span class="string">stdout_logfile</span> <span class="string">=</span> <span class="string">/home/bigdata/tmp/usercenter_stdout.log</span></span><br><span class="line"></span><br><span class="line"><span class="string">;</span> <span class="string">可以通过</span> <span class="string">environment</span> <span class="string">来添加需要的环境变量，一种常见的用法是修改</span> <span class="string">PYTHONPATH</span></span><br><span class="line"><span class="string">;</span> <span class="string">environment=PYTHONPATH=$PYTHONPATH:/path/to/somewhere</span></span><br></pre></td></tr></table></figure>
+
+<p>自行修改以上配置</p>
+<h2 id="设置并启动supervisord（服务端）"><a href="#设置并启动supervisord（服务端）" class="headerlink" title="设置并启动supervisord（服务端）"></a>设置并启动supervisord（服务端）</h2><p> 首先，supervisord运行是需要有配置文件的，启动supervisord可以直接命令行运行<br><code>supervisord</code><br>  这时，supervisor会默认依次在这几个路径下寻找配置文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$CWD/supervisord.conf, </span><br><span class="line">$CWD/etc/supervisord.conf, </span><br><span class="line">/etc/supervisord.conf</span><br></pre></td></tr></table></figure>
+<p> 如果这几个路径下没有该配置文件，则启动失败。<br> 所以如果配置文件在其他位置例如&#x2F;your_file_path&#x2F;supervisord.conf ，则需要用 -c 设置<br><code>supervisord -c /your_file_path/supervisord.conf</code></p>
+<h2 id="启动supervisorctl（客户端）"><a href="#启动supervisorctl（客户端）" class="headerlink" title="启动supervisorctl（客户端）"></a>启动supervisorctl（客户端）</h2><p>命令<br><code>sudo supervisorctl -c /your_file_path/supervisord.conf</code></p>
+<p>这里客户端和服务端要使用<strong>同一个supervisord.conf文件</strong>，要确保两者使用的是同一个！要么都默认位置，要么都指定同一位置。<br>这样就可以进入supervisor客户端<br><a target="_blank" rel="noopener" href="http://upload-images.jianshu.io/upload_images/3376541-4029f2b2e0815d83.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">Supervisor客户端</a></p>
+<p><strong>这里的web应用是对应的&#x2F;etc&#x2F;supervisor&#x2F;conf.d&#x2F;webapi.conf文件里的配置的，我的配置文件有两个即<br>webapp 和  webtest</strong><br>   这样，web接口进程就被supervisor守护了，关掉终端也无所谓了。</p>
+<p>如果要关闭应用进程，则进入supervisorctl<br>里面有<code>stop；start；restart</code>等命令，后跟web应用名即可</p>
+<h1 id="参考文献："><a href="#参考文献：" class="headerlink" title="参考文献："></a>参考文献：</h1><p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/21262280">https://zhuanlan.zhihu.com/p/21262280</a><br><a target="_blank" rel="noopener" href="http://www.jianshu.com/p/be9dd421fb8d">http://www.jianshu.com/p/be9dd421fb8d</a><br><a target="_blank" rel="noopener" href="https://gist.github.com/binderclip/f6b6f5ed4d71fa64c7c5">https://gist.github.com/binderclip/f6b6f5ed4d71fa64c7c5</a><br><a target="_blank" rel="noopener" href="http://www.cnblogs.com/Ray-liang/p/4837850.html">http://www.cnblogs.com/Ray-liang/p/4837850.html</a><br><a target="_blank" rel="noopener" href="http://liyangliang.me/posts/2015/06/using-supervisor/">http://liyangliang.me/posts/2015/06/using-supervisor/</a><br> <a target="_blank" rel="noopener" href="https://www.zhihu.com/question/32212996">https://www.zhihu.com/question/32212996</a></p>
+<p>PS：错误之处还请指正，谢谢！</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tagsz/Linux/" rel="tag"><i class="fa fa-tag"></i> Linux</a>
+              <a href="/tagsz/Flask/" rel="tag"><i class="fa fa-tag"></i> Flask</a>
+              <a href="/tagsz/Web%E5%BA%94%E7%94%A8/" rel="tag"><i class="fa fa-tag"></i> Web应用</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/10/01/2017/2016-10-01-work-record-linux-win-file-trans/" rel="prev" title="古早博文-Windows Linux 文件互传">
+      <i class="fa fa-chevron-left"></i> 古早博文-Windows Linux 文件互传
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/10/31/2017/2016-10-11-work-record-linux-ftp-server/" rel="next" title="古早博文-Ubuntu FTP服务器搭建，配置修改，所遇问题解决">
+      古早博文-Ubuntu FTP服务器搭建，配置修改，所遇问题解决 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">概述：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E6%AD%A5%EF%BC%9A%E5%AE%89%E8%A3%85anaconda2"><span class="nav-number">2.</span> <span class="nav-text">第一步：安装anaconda2</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BDAnaconda2%E7%9A%84-sh%E5%AE%89%E8%A3%85%E5%8C%85"><span class="nav-number">2.1.</span> <span class="nav-text">下载Anaconda2的.sh安装包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85anaconda%E5%B9%B6%E9%85%8D%E7%BD%AE%E6%BA%90"><span class="nav-number">2.2.</span> <span class="nav-text">安装anaconda并配置源</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E6%AD%A5%EF%BC%9A%E7%94%A8anaconda%E5%BC%80%E5%90%AF%E4%B8%80%E4%B8%AA%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83"><span class="nav-number">3.</span> <span class="nav-text">第二步：用anaconda开启一个虚拟环境</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83"><span class="nav-number">3.1.</span> <span class="nav-text">创建虚拟环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%BF%80%E6%B4%BB%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83"><span class="nav-number">3.2.</span> <span class="nav-text">激活虚拟环境</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AC%AC%E4%B8%89%E6%AD%A5%EF%BC%9A%E7%94%A8flask%E6%A1%86%E6%9E%B6%E6%9E%84%E5%BB%BA%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84web%E5%BA%94%E7%94%A8"><span class="nav-number">4.</span> <span class="nav-text">第三步：用flask框架构建一个简单的web应用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AC%AC%E5%9B%9B%E6%AD%A5%EF%BC%9A%E5%AE%89%E8%A3%85%E8%BF%90%E8%A1%8Cgunicorn"><span class="nav-number">5.</span> <span class="nav-text">第四步：安装运行gunicorn</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9C%A8%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83%E4%B8%8B%E5%AE%89%E8%A3%85gunicorn"><span class="nav-number">5.1.</span> <span class="nav-text">在虚拟环境下安装gunicorn</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%A8gunicorn%E8%BF%90%E8%A1%8Cweb%E5%BA%94%E7%94%A8"><span class="nav-number">5.2.</span> <span class="nav-text">用gunicorn运行web应用</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AC%AC%E4%BA%94%E6%AD%A5%EF%BC%9A%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AEnginx"><span class="nav-number">6.</span> <span class="nav-text">第五步：安装配置nginx</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85nginx"><span class="nav-number">6.1.</span> <span class="nav-text">安装nginx</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8nginx%E6%88%96%E9%87%8D%E5%90%AFnginx-restart"><span class="nav-number">6.2.</span> <span class="nav-text">启动nginx或重启nginx (restart)</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AC%AC%E5%85%AD%E6%AD%A5%EF%BC%9Asupervisor%E8%BF%9B%E7%A8%8B%E5%AE%88%E6%8A%A4"><span class="nav-number">7.</span> <span class="nav-text">第六步：supervisor进程守护</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85supervisor%EF%BC%88%E4%B8%8D%E5%9C%A8%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83%E9%87%8C%EF%BC%89"><span class="nav-number">7.1.</span> <span class="nav-text">安装supervisor（不在虚拟环境里）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6-supervisor-conf"><span class="nav-number">7.2.</span> <span class="nav-text">配置文件 supervisor.conf</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E5%B9%B6%E5%90%AF%E5%8A%A8supervisord%EF%BC%88%E6%9C%8D%E5%8A%A1%E7%AB%AF%EF%BC%89"><span class="nav-number">7.3.</span> <span class="nav-text">设置并启动supervisord（服务端）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8supervisorctl%EF%BC%88%E5%AE%A2%E6%88%B7%E7%AB%AF%EF%BC%89"><span class="nav-number">7.4.</span> <span class="nav-text">启动supervisorctl（客户端）</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE%EF%BC%9A"><span class="nav-number">8.</span> <span class="nav-text">参考文献：</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Leonard"
+      src="/images/avatar2.jpg">
+  <p class="site-author-name" itemprop="name">Leonard</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">34</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/liliangjie91" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;liliangjie91" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2024 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-cat"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Leonard</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">64k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">3:54</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+-->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>

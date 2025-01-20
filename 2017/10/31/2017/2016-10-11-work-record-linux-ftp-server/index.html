@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="1.安装sudo apt-get install vsftpd这样安装后，配置文件在 &#x2F;etc 下即： &#x2F;etc&#x2F;vsftpd.conf备份默认配置sudo cp &#x2F;etc&#x2F;vsftpd.conf &#x2F;etc&#x2F;vsftpd.conf.bak下面就是修改配置文件了，此时，我们需要明确的，就是需求，我们的需求如下：  1，一台win服务器定时（每两分钟）向一台Ubuntu服务器（本机器）发送一个文档。2">
+<meta property="og:type" content="article">
+<meta property="og:title" content="古早博文-Ubuntu FTP服务器搭建，配置修改，所遇问题解决">
+<meta property="og:url" content="http://example.com/2017/10/31/2017/2016-10-11-work-record-linux-ftp-server/index.html">
+<meta property="og:site_name" content="LeonardWo">
+<meta property="og:description" content="1.安装sudo apt-get install vsftpd这样安装后，配置文件在 &#x2F;etc 下即： &#x2F;etc&#x2F;vsftpd.conf备份默认配置sudo cp &#x2F;etc&#x2F;vsftpd.conf &#x2F;etc&#x2F;vsftpd.conf.bak下面就是修改配置文件了，此时，我们需要明确的，就是需求，我们的需求如下：  1，一台win服务器定时（每两分钟）向一台Ubuntu服务器（本机器）发送一个文档。2">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2017-10-31T15:20:26.000Z">
+<meta property="article:modified_time" content="2025-01-16T17:00:29.353Z">
+<meta property="article:author" content="Leonard">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="FTP">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2017/10/31/2017/2016-10-11-work-record-linux-ftp-server/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>古早博文-Ubuntu FTP服务器搭建，配置修改，所遇问题解决 | LeonardWo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">LeonardWo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">wowowowo</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2017/10/31/2017/2016-10-11-work-record-linux-ftp-server/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar2.jpg">
+      <meta itemprop="name" content="Leonard">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LeonardWo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          古早博文-Ubuntu FTP服务器搭建，配置修改，所遇问题解决
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-31 23:20:26" itemprop="dateCreated datePublished" datetime="2017-10-31T23:20:26+08:00">2017-10-31</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-01-17 01:00:29" itemprop="dateModified" datetime="2025-01-17T01:00:29+08:00">2025-01-17</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">技术</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="1-安装"><a href="#1-安装" class="headerlink" title="1.安装"></a>1.安装</h1><p><code>sudo apt-get install vsftpd</code><br>这样安装后，配置文件在 <code>/etc</code> 下即： <code>/etc/vsftpd.conf</code><br>备份默认配置<br><code>sudo cp /etc/vsftpd.conf /etc/vsftpd.conf.bak</code><br>下面就是修改配置文件了，此时，我们需要明确的，就是需求，我们的需求如下：</p>
+<blockquote>
+<p>1，一台win服务器定时（每两分钟）向一台Ubuntu服务器（本机器）发送一个文档。<br>2，该win机只能访问固定目录，不能全局访问<br>3，该win机对应用户名不能ssh登录Ubuntu服务器<br>4，另创建一个可以全局访问的用户<br>5，为Ubuntu服务器上的几个用户开通ftp权限</p>
+</blockquote>
+<p>注意，最终解决的方法可能并非最优方法。</p>
+<h1 id="2-配置文件修改-etc-vsftpd-conf"><a href="#2-配置文件修改-etc-vsftpd-conf" class="headerlink" title="2.配置文件修改&#x2F;etc&#x2F;vsftpd.conf"></a>2.配置文件修改&#x2F;etc&#x2F;vsftpd.conf</h1><ul>
+<li>2.1默认配置<br><a target="_blank" rel="noopener" href="https://security.appspot.com/vsftpd/vsftpd_conf.html">官方解释</a><br><a target="_blank" rel="noopener" href="http://os.51cto.com/art/201008/221842_all.htm">中文参考资料</a></li>
+<li>2.2重点配置项<ul>
+<li><p><strong>anonymous_enable&#x3D;YES&#x2F;NO</strong><br>是否允许匿名登录ftp。本项目是私有项目，故设为<strong>NO</strong></p>
+</li>
+<li><p><strong>write_enable&#x3D;YES&#x2F;NO</strong><br>是否允许写入。例如添加文件等。本项目为<strong>YES</strong></p>
+</li>
+<li><p><strong>local_enable&#x3D;YES&#x2F;NO</strong><br>是否允许本地用户登录。本项目为<strong>YES</strong></p>
+</li>
+<li><p><strong>local_umask&#x3D;022</strong><br>默认掩码：设置用户创建的文件的默认权限。同时ftp禁止直接创建一个可执行的文件。umask码与chmod时的码互补。即若umask&#x3D;022，实际权限为777-022&#x3D;755。但是由于ftp又有上述的禁止条件，所以刚才的算法对文件夹适用，对于文件可以使用666-022&#x3D;644。具体参考<a target="_blank" rel="noopener" href="http://blog.sina.com.cn/s/blog_49fd52cf0100nekk.html">此链接</a> 。本项目设置为<strong>022</strong></p>
+</li>
+<li><p><strong>chroot_local_user&#x3D;YES&#x2F;NO</strong><br>是否限制用户在其目录下。YES为限制，即用户只能在自己的目录下操作，无法到其他用户目录。本项目为<strong>YES</strong></p>
+</li>
+<li><p><strong>chroot_list_enable&#x3D;YES&#x2F;NO</strong><br>是否启用一个列表，这个列表由<em>chroot_list_file&#x3D;&#x2F;path&#x2F;chroot_list</em>来指定。这个列表里一行一个用户名。</p>
+<ul>
+<li>如果此项设置为YES，即启用列表则：<br>若<em>chroot_local_user&#x3D;YES</em>，那么这个列表里的用户就<strong>可以跳出</strong>目录限制而有权限到其他用户的路径。<br>若<em>chroot_local_user&#x3D;NO</em>，那么这个列表里的用户就<strong>被限制</strong>在了自己的目录而无法到其他用户路径。</li>
+<li>如果此项设置为NO，则不启用列表，直接按<em>chroot_local_user</em>的设置来执行。</li>
+</ul>
+<p>详细参考<a target="_blank" rel="noopener" href="http://blog.csdn.net/bluishglc/article/details/42398811">此链接</a></p>
+</li>
+<li><p><strong>allow_writeable_chroot&#x3D;YES</strong></p>
+</li>
+</ul>
+</li>
+</ul>
+<p>参考4.1</p>
+<ul>
+<li><p><strong>&#x2F;etc&#x2F;ftpusers</strong><br>这是一个文件，是个黑名单。里面用户不能登录ftp</p>
+</li>
+<li><p><strong>userlist_file&#x3D;&#x2F;etc&#x2F;vsftpd.user_list</strong><br>这也是指定了一个用户列表（一行一个）。这个列表会根据其他配置而变成<strong>白名单</strong> 或 <strong>黑名单</strong>：<br>其他配置即：<strong>userlist_enable 和 userlist_deny</strong>。</p>
+</li>
+<li><p><strong>userlist_enable&#x3D;YES&#x2F;NO</strong><br>是否启用userlist（即userlist_file指定的列表）。</p>
+<ul>
+<li>当设置为YES时，这个列表的用户能不能登录取决于userlist_deny的值。</li>
+<li>当设置为NO时，除了&#x2F;etc&#x2F;ftpusers中的用户，其他系统用户都可以登录。</li>
+</ul>
+<p>默认<code>(即改配置被注释或不出现在vsftpd.conf文件中时)</code>为NO</p>
+</li>
+<li><p><strong>userlist_deny&#x3D;YES&#x2F;NO</strong><br>是否把userlist设置为黑名单。YES为设置为黑名单；NO为白名单。<br><strong>注意！！</strong>此设置仅当<strong>userlist_enable&#x3D;YES</strong>时才会起作用。<br>默认为YES。即如果只设置userlist_enable&#x3D;YES，而不设置此项，则userlist里的用户是登录不了的。</p>
+</li>
+</ul>
+<h1 id="3-结果展示"><a href="#3-结果展示" class="headerlink" title="3.结果展示"></a>3.结果展示</h1><p><a target="_blank" rel="noopener" href="http://upload-images.jianshu.io/upload_images/3376541-f15abfe0213f6d45.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">登录过程</a></p>
+<p><a target="_blank" rel="noopener" href="http://upload-images.jianshu.io/upload_images/3376541-7714ebc9ca5cadb1.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">登陆成功</a></p>
+<p><a target="_blank" rel="noopener" href="http://upload-images.jianshu.io/upload_images/3376541-2063cf64d6e1f47a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">网页登录</a></p>
+<h1 id="4-所遇问题"><a href="#4-所遇问题" class="headerlink" title="4.所遇问题"></a>4.所遇问题</h1><ul>
+<li><h5 id="4-1-userlist中用户登录时报错：500-OOPS-vsftpd-refusing-to-run-with-writable-root-inside-chroot"><a href="#4-1-userlist中用户登录时报错：500-OOPS-vsftpd-refusing-to-run-with-writable-root-inside-chroot" class="headerlink" title="4.1. userlist中用户登录时报错：500 OOPS: vsftpd: refusing to run with writable root inside chroot()"></a>4.1. userlist中用户登录时报错：500 OOPS: vsftpd: refusing to run with writable root inside chroot()</h5></li>
+</ul>
+<p>解决方法<a target="_blank" rel="noopener" href="https://linux-tips.com/t/500-oops-vsftpd-refusing-to-run-with-writable-root-inside-chroot/249">见此处</a></p>
+<blockquote>
+<p><strong>If you’re using vsftpd with chroot local user option and write enable like this:</strong><br><code>write_enable=YES</code><br><code>chroot_local_user=YES</code><br><strong>and you’re getting following error when you log-in through ftp:</strong><br><code>500 OOPS: vsftpd: refusing to run with writable root inside chroot()</code><br><strong>you can fix the problem with adding following line to &#x2F;etc&#x2F;vsftpd.conf and restart the vsftpd service:</strong><br><code>allow_writeable_chroot=YES</code></p>
+</blockquote>
+<p>这是因为如果配置中开启了chroot来控制用户路径（*<code>chroot_local_user=YES</code> 说明用户无法跳出自己的初始根目录而去访问他人的目录<em>），则用户不能再具有在该用户根目录下的写的权限。所以，要添加配置项<strong>allow_writeable_chroot&#x3D;YES</strong>以开启根目录（</em>非系统根目录，而是用户登录后所在的最上级目录*）下写权限。</p>
+<ul>
+<li><h5 id="4-2-userlist中nologin用户登录时报错：530-Login-incorrect"><a href="#4-2-userlist中nologin用户登录时报错：530-Login-incorrect" class="headerlink" title="4.2. userlist中nologin用户登录时报错：530 Login incorrect."></a>4.2. userlist中nologin用户登录时报错：530 Login incorrect.</h5></li>
+</ul>
+<p>解决方法<a target="_blank" rel="noopener" href="https://serverfault.com/questions/358324/ftp-doesnt-allow-usr-sbin-nologin-user">见此处</a></p>
+<blockquote>
+<p>If you are not using PAM, then vsftpd will do its own check for a valid<br>user shell in &#x2F;etc&#x2F;shells. You may need to disable this if you use an invalid<br>shell to disable logins other than FTP logins. Put check_shell&#x3D;NO in your<br>&#x2F;etc&#x2F;vsftpd.conf.</p>
+</blockquote>
+<p><strong>或者</strong></p>
+<blockquote>
+<p>Look at <strong>check_shell</strong> in vsftpd.conf:<br><code>Note! This option only has an effect for non-PAM builds of vsftpd.</code><br><code>If disabled, vsftpd will not check /etc/shells for a valid user</code><br><code>shell for local logins.</code><br><code>Default: YES</code><br><strong>You can add <code>&#39;/usr/sbin/nologin&#39;</code> to <code>/etc/shells</code>. Simple and easy solution.</strong><br>Another one is to change vsftpd.conf&#x2F;PAM configuration.<br>Comment out this “auth …” line in PAM case:<br><code>$ grep shells /etc/pam.d/vsftpd</code><br><code>auth    required        pam_shells.so</code></p>
+</blockquote>
+<p>原因是vsftpd配置文件的check_shell默认是开启的<br>当你的用户当初创建时是用的<code>-s /bin/false</code> or <code>-s bin/nologin</code><br>ftp会拿这个和<code>/etc/shells</code>文件比对，如果不包含，则报错。所以，<br>你可以把check_shell设置为NO<br>或者把<code>bin/nologin</code>添加进<code>/etc/shells</code>来解决此问题。<br>又或者，找到vsftpd对应的pam文件<code>/etc/pam.d/vsftpd</code>，把<code>auth    required        pam_shells.so</code>这一行注释掉。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tagsz/Linux/" rel="tag"><i class="fa fa-tag"></i> Linux</a>
+              <a href="/tagsz/FTP/" rel="tag"><i class="fa fa-tag"></i> FTP</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/10/31/2017/2016-10-10-work-record-linux-flask/" rel="prev" title="古早博文-Linux下部署Flask项目——Ubuntu+Flask+Gunicorn+Supervisor+Nginx">
+      <i class="fa fa-chevron-left"></i> 古早博文-Linux下部署Flask项目——Ubuntu+Flask+Gunicorn+Supervisor+Nginx
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/12/31/2017/2017-01-01-ml-loss-function/" rel="next" title="古早博文-机器学习-损失函数">
+      古早博文-机器学习-损失函数 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E5%AE%89%E8%A3%85"><span class="nav-number">1.</span> <span class="nav-text">1.安装</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E4%BF%AE%E6%94%B9-etc-vsftpd-conf"><span class="nav-number">2.</span> <span class="nav-text">2.配置文件修改&#x2F;etc&#x2F;vsftpd.conf</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E7%BB%93%E6%9E%9C%E5%B1%95%E7%A4%BA"><span class="nav-number">3.</span> <span class="nav-text">3.结果展示</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-%E6%89%80%E9%81%87%E9%97%AE%E9%A2%98"><span class="nav-number">4.</span> <span class="nav-text">4.所遇问题</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#4-1-userlist%E4%B8%AD%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95%E6%97%B6%E6%8A%A5%E9%94%99%EF%BC%9A500-OOPS-vsftpd-refusing-to-run-with-writable-root-inside-chroot"><span class="nav-number">4.0.0.0.1.</span> <span class="nav-text">4.1. userlist中用户登录时报错：500 OOPS: vsftpd: refusing to run with writable root inside chroot()</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-2-userlist%E4%B8%ADnologin%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95%E6%97%B6%E6%8A%A5%E9%94%99%EF%BC%9A530-Login-incorrect"><span class="nav-number">4.0.0.0.2.</span> <span class="nav-text">4.2. userlist中nologin用户登录时报错：530 Login incorrect.</span></a></li></ol></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Leonard"
+      src="/images/avatar2.jpg">
+  <p class="site-author-name" itemprop="name">Leonard</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">34</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/liliangjie91" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;liliangjie91" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2024 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-cat"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Leonard</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">64k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">3:54</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+-->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="准备工作添加.gitignore 文件，把不需要追踪的文件和文件夹写进去 初始化本地git仓库git init 通过git status查看仓库当前状态通过git add添加要追踪的文件通过git commit -m &#39;infofff&#39;确认添加的文件 首次使用可能需要添加身份 12git config --global user.name &quot;name&quot;git c">
+<meta property="og:type" content="article">
+<meta property="og:title" content="git 简单教程">
+<meta property="og:url" content="http://example.com/2024/12/23/2024/2024-12-20-git-learn/index.html">
+<meta property="og:site_name" content="LeonardWo">
+<meta property="og:description" content="准备工作添加.gitignore 文件，把不需要追踪的文件和文件夹写进去 初始化本地git仓库git init 通过git status查看仓库当前状态通过git add添加要追踪的文件通过git commit -m &#39;infofff&#39;确认添加的文件 首次使用可能需要添加身份 12git config --global user.name &quot;name&quot;git c">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/image/Image-1.png">
+<meta property="article:published_time" content="2024-12-23T14:52:04.000Z">
+<meta property="article:modified_time" content="2025-01-16T17:00:29.357Z">
+<meta property="article:author" content="Leonard">
+<meta property="article:tag" content="git">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/image/Image-1.png">
+
+<link rel="canonical" href="http://example.com/2024/12/23/2024/2024-12-20-git-learn/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>git 简单教程 | LeonardWo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">LeonardWo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">wowowowo</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2024/12/23/2024/2024-12-20-git-learn/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar2.jpg">
+      <meta itemprop="name" content="Leonard">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LeonardWo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          git 简单教程
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2024-12-23 22:52:04" itemprop="dateCreated datePublished" datetime="2024-12-23T22:52:04+08:00">2024-12-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-01-17 01:00:29" itemprop="dateModified" datetime="2025-01-17T01:00:29+08:00">2025-01-17</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">技术</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h2><p>添加.gitignore 文件，把不需要追踪的文件和文件夹写进去</p>
+<h2 id="初始化本地git仓库"><a href="#初始化本地git仓库" class="headerlink" title="初始化本地git仓库"></a>初始化本地git仓库</h2><p><code>git init</code></p>
+<p>通过<code>git status</code>查看仓库当前状态<br>通过<code>git add</code>添加要追踪的文件<br>通过<code>git commit -m &#39;infofff&#39;</code>确认添加的文件</p>
+<p>首次使用可能需要添加身份</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git config --global user.name <span class="string">&quot;name&quot;</span></span><br><span class="line">git config --global user.email <span class="string">&quot;xxx@xxx.com&quot;</span></span><br></pre></td></tr></table></figure>
+<h2 id="文件添加与修改"><a href="#文件添加与修改" class="headerlink" title="文件添加与修改"></a>文件添加与修改</h2><span id="more"></span>
+
+<p><img src="/image/Image-1.png" alt="alt text"><br>一个新的文件或新的修改，最先出现在工作区<br>通过<code>git add</code>把这个修改放进Stage区域-暂存区<br>通过<code>git commit -m &#39;xxx&#39;</code>确认这个修改，放入版本库中<br>通过<code>git push</code>同步到云端</p>
+<h2 id="撤销修改与版本回退"><a href="#撤销修改与版本回退" class="headerlink" title="撤销修改与版本回退"></a>撤销修改与版本回退</h2><p><code>git checkout -- file</code><br>1.对于尚未add的即未进暂存区的文件，会返回到与最新版本库一样的版本<br>2.对于删除的文件，参见下面 关于删除<br>3.对于已经add过但又修改的文件，会返回到最近一次add后的状态  </p>
+<p><code>git reset HEAD file </code><br><code>git reset --hard HEAD xxx.py #撤销修改与版本回退（简单无脑的方式）</code><br>如果你连add的修改也要撤回，即不是返回最近一次add状态，<br>而是add了，但不想要，想直接返回最新版本库的状态<br>这时，你之前的修改会变成unstage状态，即撤销了暂存区，返回到了工作区  </p>
+<p><code>git reset --hard HEAD file  #把当前文件回退到版本库最新状态</code><br><code>git reset --hard HEAD^ file #把当前文件回退到版本库最新状态的上一个状态</code><br>同时，git reset命令，也可以回退版本，<br><strong>注意</strong>，命令最后加文件名指只对此文件操作，不加文件名指对工作区所有文件操作</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git reset --mixed #此为默认方式，不带任何参数的git reset，即使这种方式，它回退到某个版本，只保留源码，回退commit和index信息</span><br><span class="line">git reset --soft #回退到某个版本，只回退了commit的信息，不会恢复到index file一级。如果还要提交，直接commit即可</span><br><span class="line">git reset --hard #彻底回退到某个版本，本地的源码也会变为上一个版本的内容</span><br></pre></td></tr></table></figure>
+<h2 id="删除操作"><a href="#删除操作" class="headerlink" title="删除操作"></a>删除操作</h2><p><strong>删除</strong><br>删除也是一种修改<br>在工作区直接rm a.txt和修改了a.txt一样。都需要【类似】git add的操作<br><code>git rm  #对于删除 类似add的操作就是git rm</code><br>仅仅rm 对应unstage状态<br>git rm 对应to be commit状态<br>git commit 完整删除过程</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git rm -rf xxx   # 物理删除</span><br><span class="line">git rm -rf --cached xxx  #git删除</span><br></pre></td></tr></table></figure>
+
+<p><strong>撤销删除</strong><br>仅仅rm，直接git checout – a.txt即可<br>git rm 则先git reset HEAD a.txt返回到unstage状态，然后git checout – a.txt即可<br>git rm之后又做了commit，则需要回退到上一版本 git reset HEAD^ a.txt 然后checout<br>随时用git status 查看状态，会多有帮助</p>
+<h2 id="远程仓库"><a href="#远程仓库" class="headerlink" title="远程仓库"></a>远程仓库</h2><h3 id="添加远程仓库"><a href="#添加远程仓库" class="headerlink" title="添加远程仓库"></a>添加远程仓库</h3><p><code>git remote add origin https://github.com/xxx/xxx.git #https形式  </code><br><code>git remote add origin git@github.com:xxx/xxx.git #ssh形式  </code><br><code>git push -u origin master #首次推送到远程库</code></p>
+<h3 id="克隆项目"><a href="#克隆项目" class="headerlink" title="克隆项目"></a>克隆项目</h3><p><code>git clone xxx</code></p>
+<h2 id="分支"><a href="#分支" class="headerlink" title="分支"></a>分支</h2><h3 id="创建分支"><a href="#创建分支" class="headerlink" title="创建分支"></a>创建分支</h3><p><code>git checkout -b dev #创建并切换分支</code><br><code>git checkout dev  #切换到dev分支</code><br><code>git checkout -b dev origin/dev  #创建分支并从远程库拉取分支</code></p>
+<h3 id="上传分支"><a href="#上传分支" class="headerlink" title="上传分支"></a>上传分支</h3><p><code>git push #默认上传master分支或当前分支</code><br><code>git push origin dev #指定上传分支</code></p>
+<h3 id="拉取分支"><a href="#拉取分支" class="headerlink" title="拉取分支"></a>拉取分支</h3><p><code>git pull #默认拉取master分支或当前分支</code><br><code>git pull origin dev:dev  #指定拉取的分支</code></p>
+<h3 id="删除分支"><a href="#删除分支" class="headerlink" title="删除分支"></a>删除分支</h3><p><code>git branch -d localBranchName</code> 删除本地分支<br><code>git push origin --delete remoteBranchName</code> 删除远程分支</p>
+<h3 id="融合分支"><a href="#融合分支" class="headerlink" title="融合分支"></a>融合分支</h3><p>#先去到想要做融合的那个分支（不是被融合的分支）<br><code>git checkout master</code><br><code>git merge dev  # master 融合了 dev，即dev的内容 merge到了master里面</code></p>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><h3 id="移动-重命名-mv"><a href="#移动-重命名-mv" class="headerlink" title="移动,重命名-mv"></a>移动,重命名-mv</h3><p><code>git mv filename filename2</code>  </p>
+<h3 id="diff"><a href="#diff" class="headerlink" title="diff"></a>diff</h3><p><code>git diff HEAD -- file #查看当前工作区文件和版本库最新文件的不同</code></p>
+<h3 id="tag"><a href="#tag" class="headerlink" title="tag"></a>tag</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">git pull  #先拉取最新</span><br><span class="line">git tag -l “202004*”  #匹配查看202004的标签</span><br><span class="line">git tag -a 20200414 -m “new tag 0414”  #打标签</span><br><span class="line">git push origin 20200414 #推送</span><br><span class="line">git tag -d xx  #删除</span><br><span class="line">git show xxx #详情</span><br></pre></td></tr></table></figure>
+
+<h3 id="第一次上传GitHub流程"><a href="#第一次上传GitHub流程" class="headerlink" title="第一次上传GitHub流程"></a>第一次上传GitHub流程</h3><ol>
+<li>添加远程库<br><code>git remote add origin https://github.com/xxx/xxx.git #https形式  </code><br><code>git remote add origin git@github.com:xxx/xxx.git #ssh形式  </code></li>
+<li>本地分支命名<br><code>git branch -M main</code><br><code>-M # move/rename a branch, even if target exists</code></li>
+<li>本地push到GitHub<br><code>git push -u origin main</code>   <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">-u #相当于执行一下两条命令</span><br><span class="line">git push origin main</span><br><span class="line">git branch --set-upstream main origin/main</span><br><span class="line"></span><br><span class="line">可以通过 git branch -vv 查看各分支的upstream设置情况</span><br><span class="line">若没有设置，则需要使用git push origin xxx指定远程库的分支，直接使用git push会失败</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="ssh形式连接GitHub"><a href="#ssh形式连接GitHub" class="headerlink" title="ssh形式连接GitHub"></a>ssh形式连接GitHub</h3><p>如果使用https形式链接GitHub，每次push需要输入GitHub密码，很繁琐<br>使用ssh形式会更简单</p>
+<ol>
+<li>本地生成ssh密钥<br><code>ssh-keygen -t rsa -C &quot;xxx@xxx.com&quot;</code><br>生成时会提示密钥位置</li>
+<li>把本地公钥上传GitHub<br><code>https://github.com/settings/keys</code><br><code>.pub</code>文件，复制内容，github上新建key–<code>New SSH Key</code></li>
+<li>本地remote改为ssh形式(如有必要)<br><code>git remote set-url origin git@github.com:username/xxx.git</code>  <ul>
+<li>测试ssh是否ok：<code>ssh -T git@github.com</code><br> 如果挂魔法，可能失败，需要一定修改you know m3</li>
+</ul>
+</li>
+</ol>
+<h3 id="ssh如果22端口不行"><a href="#ssh如果22端口不行" class="headerlink" title="ssh如果22端口不行"></a>ssh如果22端口不行</h3><h4 id="1-原因分析"><a href="#1-原因分析" class="headerlink" title="1. 原因分析"></a><strong>1. 原因分析</strong></h4><ul>
+<li><strong>默认端口限制</strong>：SSH 默认使用端口 <strong>22</strong>，但有些网络（例如公司内网、学校或通过 Clash 的代理设置）会屏蔽或限制对 22 端口的访问。</li>
+<li><strong>魔法的影响</strong>：魔法可能对默认的 22 端口流量进行了代理或阻断，导致连接失败。</li>
+<li><strong>GitHub 提供的解决方案</strong>：GitHub 提供了备用的 SSH 服务，可以通过 <code>ssh.github.com</code> 使用 443 端口进行连接，绕过限制。</li>
+</ul>
+<h4 id="2-临时解决方法"><a href="#2-临时解决方法" class="headerlink" title="2. 临时解决方法"></a><strong>2. 临时解决方法</strong></h4><p>你可以通过以下命令连接 GitHub：<code>ssh -T -p 443 git@ssh.github.com</code><br>这会直接指定 443 端口并使用备用地址。但每次手动输入比较麻烦，因此可以通过配置文件永久修改。</p>
+<h4 id="3-修改-SSH-配置文件"><a href="#3-修改-SSH-配置文件" class="headerlink" title="3. 修改 SSH 配置文件"></a><strong>3. 修改 SSH 配置文件</strong></h4><p>通过配置 SSH，让 Git 自动使用备用地址和端口连接 GitHub，无需每次手动指定。</p>
+<ol>
+<li><p>打开 SSH 配置文件（如果没有则创建）：<code>path_to/.ssh/config</code></p>
+</li>
+<li><p>添加以下内容：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Host github.com</span><br><span class="line">    HostName ssh.github.com</span><br><span class="line">    Port 443</span><br><span class="line">    User git</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>测试<code>ssh -T git@github.com</code></p>
+</li>
+</ol>
+<h4 id="4-另一个方法-可选-修改魔法配置"><a href="#4-另一个方法-可选-修改魔法配置" class="headerlink" title="4. (另一个方法-可选)-修改魔法配置"></a><strong>4. (另一个方法-可选)-修改魔法配置</strong></h4><p>123</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tagsz/git/" rel="tag"><i class="fa fa-tag"></i> git</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/12/31/2019/2019-01-06-ml-dl-RNN01/" rel="prev" title="古早博文-深度学习-RNN-循环神经网络">
+      <i class="fa fa-chevron-left"></i> 古早博文-深度学习-RNN-循环神经网络
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2024/12/25/2024/2024-12-21-llm-params-caculate/" rel="next" title="大模型参数量计算">
+      大模型参数量计算 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C"><span class="nav-number">1.</span> <span class="nav-text">准备工作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96%E6%9C%AC%E5%9C%B0git%E4%BB%93%E5%BA%93"><span class="nav-number">2.</span> <span class="nav-text">初始化本地git仓库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E6%B7%BB%E5%8A%A0%E4%B8%8E%E4%BF%AE%E6%94%B9"><span class="nav-number">3.</span> <span class="nav-text">文件添加与修改</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%92%A4%E9%94%80%E4%BF%AE%E6%94%B9%E4%B8%8E%E7%89%88%E6%9C%AC%E5%9B%9E%E9%80%80"><span class="nav-number">4.</span> <span class="nav-text">撤销修改与版本回退</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%A0%E9%99%A4%E6%93%8D%E4%BD%9C"><span class="nav-number">5.</span> <span class="nav-text">删除操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%9C%E7%A8%8B%E4%BB%93%E5%BA%93"><span class="nav-number">6.</span> <span class="nav-text">远程仓库</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E8%BF%9C%E7%A8%8B%E4%BB%93%E5%BA%93"><span class="nav-number">6.1.</span> <span class="nav-text">添加远程仓库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%8B%E9%9A%86%E9%A1%B9%E7%9B%AE"><span class="nav-number">6.2.</span> <span class="nav-text">克隆项目</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E6%94%AF"><span class="nav-number">7.</span> <span class="nav-text">分支</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E5%88%86%E6%94%AF"><span class="nav-number">7.1.</span> <span class="nav-text">创建分支</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8A%E4%BC%A0%E5%88%86%E6%94%AF"><span class="nav-number">7.2.</span> <span class="nav-text">上传分支</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8B%89%E5%8F%96%E5%88%86%E6%94%AF"><span class="nav-number">7.3.</span> <span class="nav-text">拉取分支</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A0%E9%99%A4%E5%88%86%E6%94%AF"><span class="nav-number">7.4.</span> <span class="nav-text">删除分支</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%9E%8D%E5%90%88%E5%88%86%E6%94%AF"><span class="nav-number">7.5.</span> <span class="nav-text">融合分支</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B6%E4%BB%96"><span class="nav-number">8.</span> <span class="nav-text">其他</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A7%BB%E5%8A%A8-%E9%87%8D%E5%91%BD%E5%90%8D-mv"><span class="nav-number">8.1.</span> <span class="nav-text">移动,重命名-mv</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#diff"><span class="nav-number">8.2.</span> <span class="nav-text">diff</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tag"><span class="nav-number">8.3.</span> <span class="nav-text">tag</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E6%AC%A1%E4%B8%8A%E4%BC%A0GitHub%E6%B5%81%E7%A8%8B"><span class="nav-number">8.4.</span> <span class="nav-text">第一次上传GitHub流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ssh%E5%BD%A2%E5%BC%8F%E8%BF%9E%E6%8E%A5GitHub"><span class="nav-number">8.5.</span> <span class="nav-text">ssh形式连接GitHub</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ssh%E5%A6%82%E6%9E%9C22%E7%AB%AF%E5%8F%A3%E4%B8%8D%E8%A1%8C"><span class="nav-number">8.6.</span> <span class="nav-text">ssh如果22端口不行</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E5%8E%9F%E5%9B%A0%E5%88%86%E6%9E%90"><span class="nav-number">8.6.1.</span> <span class="nav-text">1. 原因分析</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E4%B8%B4%E6%97%B6%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95"><span class="nav-number">8.6.2.</span> <span class="nav-text">2. 临时解决方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-%E4%BF%AE%E6%94%B9-SSH-%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6"><span class="nav-number">8.6.3.</span> <span class="nav-text">3. 修改 SSH 配置文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-%E5%8F%A6%E4%B8%80%E4%B8%AA%E6%96%B9%E6%B3%95-%E5%8F%AF%E9%80%89-%E4%BF%AE%E6%94%B9%E9%AD%94%E6%B3%95%E9%85%8D%E7%BD%AE"><span class="nav-number">8.6.4.</span> <span class="nav-text">4. (另一个方法-可选)-修改魔法配置</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Leonard"
+      src="/images/avatar2.jpg">
+  <p class="site-author-name" itemprop="name">Leonard</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">34</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/liliangjie91" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;liliangjie91" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2024 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-cat"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Leonard</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">64k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">3:54</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+-->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="本文主要记录读Llama3论文时的流水账">
+<meta property="og:type" content="article">
+<meta property="og:title" content="论文阅读-Llama3">
+<meta property="og:url" content="http://example.com/2024/12/30/2024/2024-12-30-llm-paper-Llama3/index.html">
+<meta property="og:site_name" content="LeonardWo">
+<meta property="og:description" content="本文主要记录读Llama3论文时的流水账">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-12-30T08:26:47.000Z">
+<meta property="article:modified_time" content="2025-01-16T17:00:29.358Z">
+<meta property="article:author" content="Leonard">
+<meta property="article:tag" content="大模型">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="AGI">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2024/12/30/2024/2024-12-30-llm-paper-Llama3/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>论文阅读-Llama3 | LeonardWo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">LeonardWo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">wowowowo</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2024/12/30/2024/2024-12-30-llm-paper-Llama3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar2.jpg">
+      <meta itemprop="name" content="Leonard">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LeonardWo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          论文阅读-Llama3
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2024-12-30 16:26:47" itemprop="dateCreated datePublished" datetime="2024-12-30T16:26:47+08:00">2024-12-30</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-01-17 01:00:29" itemprop="dateModified" datetime="2025-01-17T01:00:29+08:00">2025-01-17</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">技术</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/AI%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">AI大模型</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+            <div class="post-description">本文主要记录读Llama3论文时的流水账</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2407.21783">论文：The Llama 3 Herd of Models</a></p>
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>模型：<br>405B参数， dense transformer<br>window：128k</p>
+<table>
+<thead>
+<tr>
+<th>x</th>
+<th>8B</th>
+<th>70B</th>
+<th>405B</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>layers</td>
+<td>32</td>
+<td>80</td>
+<td>126</td>
+</tr>
+<tr>
+<td>dim_model</td>
+<td>4096</td>
+<td>8192</td>
+<td>16384</td>
+</tr>
+<tr>
+<td>dim_FFN</td>
+<td>14336</td>
+<td>28672</td>
+<td>53248</td>
+</tr>
+<tr>
+<td>attention_heads</td>
+<td>32</td>
+<td>64</td>
+<td>128</td>
+</tr>
+<tr>
+<td>kv_heads</td>
+<td>8</td>
+<td>8</td>
+<td>8</td>
+</tr>
+<tr>
+<td>peak_lr</td>
+<td>3e-4</td>
+<td>1.5e-4</td>
+<td>8e-5</td>
+</tr>
+<tr>
+<td>Acti Fun</td>
+<td>swiGLU</td>
+<td>swiGLU</td>
+<td>swiGLU</td>
+</tr>
+<tr>
+<td>Vocab size</td>
+<td>128000</td>
+<td>128000</td>
+<td>128000</td>
+</tr>
+<tr>
+<td>Position embedding</td>
+<td>RoPE(500k)</td>
+<td>RoPE(500k)</td>
+<td>RoPE(500k)</td>
+</tr>
+</tbody></table>
+<p>Llama2 使用了2T tokens 即2万亿个token<br>Llama3 使用了超过15T tokens</p>
+<h2 id="1-introduction"><a href="#1-introduction" class="headerlink" title="1. introduction"></a>1. introduction</h2><p><strong>大模型训练流程：</strong></p>
+<ol>
+<li>pre-training: 大数据集上的下一词训练，类似GPT123 等</li>
+<li>post-training: 微调，对齐，专业能力</li>
+</ol>
+<p><strong>Llama 3 突出能力</strong></p>
+<ol>
+<li>multilinguality</li>
+<li>coding</li>
+<li>reasoning</li>
+<li>tool usage</li>
+</ol>
+<p><strong>获取高质量大模型的3个关键点</strong></p>
+<ol>
+<li>Data：相比之前的模型，llama3使用的数据质和量均有提高，1.8T–&gt;15T</li>
+<li>Scale：相比llama2，模型大了50倍</li>
+<li>Managing complexity：管理复杂度：使用标准Transformer而非MOE；使用简单强化学习方法而非复杂方法</li>
+</ol>
+<h2 id="2-General-Overview"><a href="#2-General-Overview" class="headerlink" title="2. General Overview"></a>2. General Overview</h2><p><strong>训练过程</strong></p>
+<h3 id="pre-training"><a href="#pre-training" class="headerlink" title="pre-training"></a>pre-training</h3><p><code>we pre-train a model with 405B parameters on 15.6T tokens using a context window of 8K tokens.</code></p>
+<p>next stage 8k–&gt;128k</p>
+<h3 id="post-training"><a href="#post-training" class="headerlink" title="post-training"></a>post-training</h3><ol>
+<li>多轮 SFT+DPO</li>
+<li>结合其他能力</li>
+<li>安全措施</li>
+</ol>
+<h3 id="模型多模态能力训练"><a href="#模型多模态能力训练" class="headerlink" title="模型多模态能力训练"></a>模型多模态能力训练</h3><p><code>we add image, video, and speech capabilities to Llama 3</code></p>
+<h4 id="Multi-modal-encoder-pre-training"><a href="#Multi-modal-encoder-pre-training" class="headerlink" title="Multi-modal encoder pre-training"></a>Multi-modal encoder pre-training</h4><p>各个模态数据encoder分开训练各自的encoder。</p>
+<ul>
+<li>image: 使用image-text pairs</li>
+<li>speech: 自监督方法，使用mask</li>
+</ul>
+<h4 id="Vision-adapter-training"><a href="#Vision-adapter-training" class="headerlink" title="Vision adapter training"></a>Vision adapter training</h4><p>训练adapter，将image encoder 和 language model 连接起来</p>
+<ul>
+<li>video: 使用video-text pairs数据</li>
+<li>image: 使用image-text pairs数据</li>
+</ul>
+<p>第7章详解</p>
+<h4 id="Speech-adapter-training"><a href="#Speech-adapter-training" class="headerlink" title="Speech adapter training"></a>Speech adapter training</h4><p>同样训练adapter，将speech encoder 和 language model 连接起来</p>
+<h2 id="3-Pre-training"><a href="#3-Pre-training" class="headerlink" title="3.Pre-training"></a>3.Pre-training</h2><ul>
+<li>数据的处理</li>
+<li>确定模型结构与规模</li>
+<li>大数据集上的高效预训练</li>
+<li>预训练手册</li>
+</ul>
+<h3 id="3-1-Data"><a href="#3-1-Data" class="headerlink" title="3.1 Data"></a>3.1 Data</h3><p><strong>数据获取与预处理</strong></p>
+<ul>
+<li>在网上爬取巨量数据，处理PII,成人数据等，去重，基于模型的文本质量判断，特殊数据（code，reasoning 等），多语言数据</li>
+</ul>
+<p><strong>数据配比</strong></p>
+<ul>
+<li>50% 通用知识</li>
+<li>25% 数学，reasoning</li>
+<li>17% 代码</li>
+<li>8% 多语言</li>
+</ul>
+<p><strong>数据退火</strong></p>
+<p>Annealing Data 的背后逻辑是模仿人类学习过程——从简单到复杂逐步进阶。对于大模型，直接使用全部数据进行训练可能导致：</p>
+<ul>
+<li>过早过拟合：模型在初期对数据的复杂模式学习不足。</li>
+<li>优化不稳定：尤其是在模型权重初始化阶段，大量复杂样本可能使梯度不稳定。 通过数据退火，可以让模型逐步适应复杂任务，从而实现更稳定的优化。</li>
+</ul>
+<p>在小模型使用数据退火可以取得很好提升，但是随着模型变大，数据退火效果减弱。在405B模型上，数据退火效果不明显。</p>
+<h3 id="3-2-Model"><a href="#3-2-Model" class="headerlink" title="3.2 Model"></a>3.2 Model</h3><p>模型基础架构没变，提升来自于数据加大和模型加大<br>2点小变化</p>
+<ul>
+<li>GQA</li>
+<li>attention mask 用在一个sequence内而不同的document,即一个sequence包含了2个document时，我们需要确保attention不会跨越document</li>
+</ul>
+<h4 id="Scaling-Laws"><a href="#Scaling-Laws" class="headerlink" title="Scaling Laws"></a>Scaling Laws</h4><p>预测最佳模型规模<br>预估模型在下游任务的表现<br>挑战：</p>
+<ul>
+<li>当前的scaling laws 仅预测下一词损失，没有预测其他指标</li>
+<li>当前的scaling laws 是基于小模型，对于大模型，需要新的scaling laws</li>
+</ul>
+<p>解决方法</p>
+<ul>
+<li>建立<code>training FLOPs</code>和<code>下游任务损失</code>之间的相关性</li>
+<li>建立<code>下游任务损失</code>和<code>任务精度</code>之间的相关性</li>
+</ul>
+<h3 id="3-3-Infrastructure-Scaling-and-Efficiency"><a href="#3-3-Infrastructure-Scaling-and-Efficiency" class="headerlink" title="3.3 Infrastructure, Scaling, and Efficiency"></a>3.3 Infrastructure, Scaling, and Efficiency</h3><h3 id="3-4-Training-recipes"><a href="#3-4-Training-recipes" class="headerlink" title="3.4 Training recipes"></a>3.4 Training recipes</h3><ul>
+<li>initial pre-training<br>渐进式增加batch size</li>
+<li>long context pre-training<br>预训练结束阶段，大幅增加context window到128K。意思是这是个渐进过程，分6次完成。</li>
+<li>annealing<br>预训练最后阶段lr退火</li>
+</ul>
+<h2 id="4-Post-training"><a href="#4-Post-training" class="headerlink" title="4. Post-training"></a>4. Post-training</h2><p>多轮后训练</p>
+<h3 id="4-1-Modeling"><a href="#4-1-Modeling" class="headerlink" title="4.1 Modeling"></a>4.1 Modeling</h3><ol>
+<li>使用人工注释数据在最终预训练模型上，训练Reward Model</li>
+<li>使用SFT</li>
+<li>使用DPO 方法</li>
+</ol>
+<h3 id="4-2-Post-training-Data"><a href="#4-2-Post-training-Data" class="headerlink" title="4.2 Post-training Data"></a>4.2 Post-training Data</h3><h4 id="偏好数据"><a href="#偏好数据" class="headerlink" title="偏好数据"></a>偏好数据</h4><ul>
+<li>后训练数据级别：edited &gt; chosen &gt; rejected</li>
+<li>注释者为chosen选项评级，共4级，相对于rejected的等级:<ul>
+<li>significantly better</li>
+<li>better</li>
+<li>slightly better</li>
+<li>marginally better</li>
+</ul>
+</li>
+<li>对于edited数据，注释者可以在chosen的基础上做编辑修改，也可以通过与模型多次反馈对话获得好的输出</li>
+</ul>
+<h4 id="SFT数据"><a href="#SFT数据" class="headerlink" title="SFT数据"></a>SFT数据</h4><h4 id="Data-Processing-and-Quality-Control"><a href="#Data-Processing-and-Quality-Control" class="headerlink" title="Data Processing and Quality Control"></a>Data Processing and Quality Control</h4><p>因为后训练数据也大都来自模型，所以需要数据处理和质量控制</p>
+<h3 id="4-3-Capabilities"><a href="#4-3-Capabilities" class="headerlink" title="4.3 Capabilities"></a>4.3 Capabilities</h3><h4 id="Code"><a href="#Code" class="headerlink" title="Code"></a>Code</h4><p>训练code expert<br>后训练数据生成：</p>
+<ul>
+<li>使用code expert 生成数据：提问，生成，评估，修正</li>
+<li>代码翻译</li>
+</ul>
+<h4 id="Multilinguality"><a href="#Multilinguality" class="headerlink" title="Multilinguality"></a>Multilinguality</h4><h4 id="Math-and-Reasoning"><a href="#Math-and-Reasoning" class="headerlink" title="Math and Reasoning"></a>Math and Reasoning</h4><h4 id="Long-Context"><a href="#Long-Context" class="headerlink" title="Long Context"></a>Long Context</h4><h4 id="Tool-Use"><a href="#Tool-Use" class="headerlink" title="Tool Use"></a>Tool Use</h4><h4 id="Factuality"><a href="#Factuality" class="headerlink" title="Factuality"></a>Factuality</h4><p>处理幻觉</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tagsz/%E5%A4%A7%E6%A8%A1%E5%9E%8B/" rel="tag"><i class="fa fa-tag"></i> 大模型</a>
+              <a href="/tagsz/AI/" rel="tag"><i class="fa fa-tag"></i> AI</a>
+              <a href="/tagsz/AGI/" rel="tag"><i class="fa fa-tag"></i> AGI</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/12/28/2024/2024-12-26-life-about-zaijianairen/" rel="prev" title="再见爱人与再爱贱人">
+      <i class="fa fa-chevron-left"></i> 再见爱人与再爱贱人
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2024/12/30/2024/2024-12-30-llm-paper-whisper/" rel="next" title="论文阅读-Whisper">
+      论文阅读-Whisper <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-introduction"><span class="nav-number">2.</span> <span class="nav-text">1. introduction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-General-Overview"><span class="nav-number">3.</span> <span class="nav-text">2. General Overview</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#pre-training"><span class="nav-number">3.1.</span> <span class="nav-text">pre-training</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#post-training"><span class="nav-number">3.2.</span> <span class="nav-text">post-training</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E5%A4%9A%E6%A8%A1%E6%80%81%E8%83%BD%E5%8A%9B%E8%AE%AD%E7%BB%83"><span class="nav-number">3.3.</span> <span class="nav-text">模型多模态能力训练</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Multi-modal-encoder-pre-training"><span class="nav-number">3.3.1.</span> <span class="nav-text">Multi-modal encoder pre-training</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Vision-adapter-training"><span class="nav-number">3.3.2.</span> <span class="nav-text">Vision adapter training</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Speech-adapter-training"><span class="nav-number">3.3.3.</span> <span class="nav-text">Speech adapter training</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Pre-training"><span class="nav-number">4.</span> <span class="nav-text">3.Pre-training</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-Data"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 Data</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-Model"><span class="nav-number">4.2.</span> <span class="nav-text">3.2 Model</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Scaling-Laws"><span class="nav-number">4.2.1.</span> <span class="nav-text">Scaling Laws</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-Infrastructure-Scaling-and-Efficiency"><span class="nav-number">4.3.</span> <span class="nav-text">3.3 Infrastructure, Scaling, and Efficiency</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-4-Training-recipes"><span class="nav-number">4.4.</span> <span class="nav-text">3.4 Training recipes</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Post-training"><span class="nav-number">5.</span> <span class="nav-text">4. Post-training</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-Modeling"><span class="nav-number">5.1.</span> <span class="nav-text">4.1 Modeling</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-Post-training-Data"><span class="nav-number">5.2.</span> <span class="nav-text">4.2 Post-training Data</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%81%8F%E5%A5%BD%E6%95%B0%E6%8D%AE"><span class="nav-number">5.2.1.</span> <span class="nav-text">偏好数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SFT%E6%95%B0%E6%8D%AE"><span class="nav-number">5.2.2.</span> <span class="nav-text">SFT数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Data-Processing-and-Quality-Control"><span class="nav-number">5.2.3.</span> <span class="nav-text">Data Processing and Quality Control</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-Capabilities"><span class="nav-number">5.3.</span> <span class="nav-text">4.3 Capabilities</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Code"><span class="nav-number">5.3.1.</span> <span class="nav-text">Code</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Multilinguality"><span class="nav-number">5.3.2.</span> <span class="nav-text">Multilinguality</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Math-and-Reasoning"><span class="nav-number">5.3.3.</span> <span class="nav-text">Math and Reasoning</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Long-Context"><span class="nav-number">5.3.4.</span> <span class="nav-text">Long Context</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Tool-Use"><span class="nav-number">5.3.5.</span> <span class="nav-text">Tool Use</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Factuality"><span class="nav-number">5.3.6.</span> <span class="nav-text">Factuality</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Leonard"
+      src="/images/avatar2.jpg">
+  <p class="site-author-name" itemprop="name">Leonard</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">34</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/liliangjie91" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;liliangjie91" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2024 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-cat"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Leonard</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">64k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">3:54</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+-->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>

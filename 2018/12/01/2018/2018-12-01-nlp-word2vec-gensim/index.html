@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="训练词向量的方法有很多，当时使用python的gensim包，简单读了下源码">
+<meta property="og:type" content="article">
+<meta property="og:title" content="源码解读-nlp-word2vec-gensim">
+<meta property="og:url" content="http://example.com/2018/12/01/2018/2018-12-01-nlp-word2vec-gensim/index.html">
+<meta property="og:site_name" content="LeonardWo">
+<meta property="og:description" content="训练词向量的方法有很多，当时使用python的gensim包，简单读了下源码">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-12-01T06:19:32.000Z">
+<meta property="article:modified_time" content="2025-01-16T17:00:29.357Z">
+<meta property="article:author" content="Leonard">
+<meta property="article:tag" content="word2vec">
+<meta property="article:tag" content="NLP">
+<meta property="article:tag" content="源码解读">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://example.com/2018/12/01/2018/2018-12-01-nlp-word2vec-gensim/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>源码解读-nlp-word2vec-gensim | LeonardWo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">LeonardWo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">wowowowo</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2018/12/01/2018/2018-12-01-nlp-word2vec-gensim/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar2.jpg">
+      <meta itemprop="name" content="Leonard">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LeonardWo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          源码解读-nlp-word2vec-gensim
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-12-01 14:19:32" itemprop="dateCreated datePublished" datetime="2018-12-01T14:19:32+08:00">2018-12-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-01-17 01:00:29" itemprop="dateModified" datetime="2025-01-17T01:00:29+08:00">2025-01-17</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">技术</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+            <div class="post-description">训练词向量的方法有很多，当时使用python的gensim包，简单读了下源码</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>version=2.0.0<br>注意截止20181107，gensim最新版本已到了3.6 其源码与2.0差别很大，主要是结构上的区别，内容上差不多。</p>
+<h1 id="总体来说，训练过程执行两步"><a href="#总体来说，训练过程执行两步" class="headerlink" title="总体来说，训练过程执行两步"></a>总体来说，训练过程执行两步</h1><p>1，self.build_vocab<br>2，self.train</p>
+<h1 id="build-vocab"><a href="#build-vocab" class="headerlink" title="build_vocab"></a>build_vocab</h1><p>其中，build_vocab函数里，依次执行三个函数 参考<a target="_blank" rel="noopener" href="https://blog.csdn.net/u014568072/article/details/79071116">https://blog.csdn.net/u014568072/article/details/79071116</a>,</p>
+<h2 id="self-scan-vocab"><a href="#self-scan-vocab" class="headerlink" title="self.scan_vocab"></a>self.scan_vocab</h2><p><code>self.scan_vocab(sentences, progress_per=progress_per, trim_rule=trim_rule) #对句子中的单词进行初始化</code><br>新建一个vocab字典<br>把所有句子（是一个个list，里面是一个个Word）扫描一遍，做WordCount。<br>其中，如果设置了self.max_vocab_size,那么，会依次删除vocab里词频最小的词<br>这个vocab最后赋值给 self.raw_vocab作为最原始的vocab，最最终，vocab要以self.wv.vocab为准</p>
+<h2 id="self-scale-vocab"><a href="#self-scale-vocab" class="headerlink" title="self.scale_vocab"></a>self.scale_vocab</h2><p><code>self.scale_vocab(keep_raw_vocab=keep_raw_vocab, trim_rule=trim_rule, update=update) # 应用min_count的词汇表设置（丢弃不太频繁的单词）和sample（控制更频繁单词的采样）。</code><br>有几个重要参数：</p>
+<ol>
+<li>update：更新的是self.wv.vocab的值。即当前的raw_vocab用来更新self.wv.vocab</li>
+<li>dry_run（一般默认false）：可以理解为是否要干跑，干跑即不更新self.wv.vocab等值，仅跑一下数据，统计一下信息，例如词频，估计内存等，会模拟着去除低频词，处理高频词，但不把处理的结果放进self.wv</li>
+</ol>
+<p><strong>主体函数的作用</strong></p>
+<ol>
+<li>去低频词 min_count</li>
+<li>下采样高频词 sample，高频词在后续中每次的训练中，以一定的概率p被保留（即1-p的概率被舍弃）。这里涉及到self.wv.vocab[‘key’].sample_int这个值，这个值是Vocab类的一个属性，表示被保留的概率<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.439ex;" xmlns="http://www.w3.org/2000/svg" width="9.936ex" height="1.946ex" role="img" focusable="false" viewBox="0 -666 4391.9 860"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><path data-c="1D45D" d="M23 287Q24 290 25 295T30 317T40 348T55 381T75 411T101 433T134 442Q209 442 230 378L240 387Q302 442 358 442Q423 442 460 395T497 281Q497 173 421 82T249 -10Q227 -10 210 -4Q199 1 187 11T168 28L161 36Q160 35 139 -51T118 -138Q118 -144 126 -145T163 -148H188Q194 -155 194 -157T191 -175Q188 -187 185 -190T172 -194Q170 -194 161 -194T127 -193T65 -192Q-5 -192 -24 -194H-32Q-39 -187 -39 -183Q-37 -156 -26 -148H-6Q28 -147 33 -136Q36 -130 94 103T155 350Q156 355 156 364Q156 405 131 405Q109 405 94 377T71 316T59 280Q57 278 43 278H29Q23 284 23 287ZM178 102Q200 26 252 26Q282 26 310 49T356 107Q374 141 392 215T411 325V331Q411 405 350 405Q339 405 328 402T306 393T286 380T269 365T254 350T243 336T235 326L232 322Q232 321 229 308T218 264T204 212Q178 106 178 102Z"></path></g><g data-mml-node="mo" transform="translate(725.2,0)"><path data-c="2217" d="M229 286Q216 420 216 436Q216 454 240 464Q241 464 245 464T251 465Q263 464 273 456T283 436Q283 419 277 356T270 286L328 328Q384 369 389 372T399 375Q412 375 423 365T435 338Q435 325 425 315Q420 312 357 282T289 250L355 219L425 184Q434 175 434 161Q434 146 425 136T401 125Q393 125 383 131T328 171L270 213Q283 79 283 63Q283 53 276 44T250 35Q231 35 224 44T216 63Q216 80 222 143T229 213L171 171Q115 130 110 127Q106 124 100 124Q87 124 76 134T64 161Q64 166 64 169T67 175T72 181T81 188T94 195T113 204T138 215T170 230T210 250L74 315Q65 324 65 338Q65 353 74 363T98 374Q106 374 116 368T171 328L229 286Z"></path></g><g data-mml-node="mn" transform="translate(1447.4,0)"><path data-c="32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path></g><g data-mml-node="mo" transform="translate(2169.7,0)"><path data-c="2217" d="M229 286Q216 420 216 436Q216 454 240 464Q241 464 245 464T251 465Q263 464 273 456T283 436Q283 419 277 356T270 286L328 328Q384 369 389 372T399 375Q412 375 423 365T435 338Q435 325 425 315Q420 312 357 282T289 250L355 219L425 184Q434 175 434 161Q434 146 425 136T401 125Q393 125 383 131T328 171L270 213Q283 79 283 63Q283 53 276 44T250 35Q231 35 224 44T216 63Q216 80 222 143T229 213L171 171Q115 130 110 127Q106 124 100 124Q87 124 76 134T64 161Q64 166 64 169T67 175T72 181T81 188T94 195T113 204T138 215T170 230T210 250L74 315Q65 324 65 338Q65 353 74 363T98 374Q106 374 116 368T171 328L229 286Z"></path></g><g data-mml-node="mo" transform="translate(2891.9,0)"><path data-c="2217" d="M229 286Q216 420 216 436Q216 454 240 464Q241 464 245 464T251 465Q263 464 273 456T283 436Q283 419 277 356T270 286L328 328Q384 369 389 372T399 375Q412 375 423 365T435 338Q435 325 425 315Q420 312 357 282T289 250L355 219L425 184Q434 175 434 161Q434 146 425 136T401 125Q393 125 383 131T328 171L270 213Q283 79 283 63Q283 53 276 44T250 35Q231 35 224 44T216 63Q216 80 222 143T229 213L171 171Q115 130 110 127Q106 124 100 124Q87 124 76 134T64 161Q64 166 64 169T67 175T72 181T81 188T94 195T113 204T138 215T170 230T210 250L74 315Q65 324 65 338Q65 353 74 363T98 374Q106 374 116 368T171 328L229 286Z"></path></g><g data-mml-node="mn" transform="translate(3391.9,0)"><path data-c="33" d="M127 463Q100 463 85 480T69 524Q69 579 117 622T233 665Q268 665 277 664Q351 652 390 611T430 522Q430 470 396 421T302 350L299 348Q299 347 308 345T337 336T375 315Q457 262 457 175Q457 96 395 37T238 -22Q158 -22 100 21T42 130Q42 158 60 175T105 193Q133 193 151 175T169 130Q169 119 166 110T159 94T148 82T136 74T126 70T118 67L114 66Q165 21 238 21Q293 21 321 74Q338 107 338 175V195Q338 290 274 322Q259 328 213 329L171 330L168 332Q166 335 166 348Q166 366 174 366Q202 366 232 371Q266 376 294 413T322 525V533Q322 590 287 612Q265 626 240 626Q208 626 181 615T143 592T132 580H135Q138 579 143 578T153 573T165 566T175 555T183 540T186 520Q186 498 172 481T127 463Z"></path><path data-c="32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z" transform="translate(500,0)"></path></g></g></g></svg></mjx-container>，后续如果随机生成一个（0,<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.05ex;" xmlns="http://www.w3.org/2000/svg" width="6.662ex" height="1.557ex" role="img" focusable="false" viewBox="0 -666 2944.4 688"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mn"><path data-c="32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path></g><g data-mml-node="mo" transform="translate(722.2,0)"><path data-c="2217" d="M229 286Q216 420 216 436Q216 454 240 464Q241 464 245 464T251 465Q263 464 273 456T283 436Q283 419 277 356T270 286L328 328Q384 369 389 372T399 375Q412 375 423 365T435 338Q435 325 425 315Q420 312 357 282T289 250L355 219L425 184Q434 175 434 161Q434 146 425 136T401 125Q393 125 383 131T328 171L270 213Q283 79 283 63Q283 53 276 44T250 35Q231 35 224 44T216 63Q216 80 222 143T229 213L171 171Q115 130 110 127Q106 124 100 124Q87 124 76 134T64 161Q64 166 64 169T67 175T72 181T81 188T94 195T113 204T138 215T170 230T210 250L74 315Q65 324 65 338Q65 353 74 363T98 374Q106 374 116 368T171 328L229 286Z"></path></g><g data-mml-node="mo" transform="translate(1444.4,0)"><path data-c="2217" d="M229 286Q216 420 216 436Q216 454 240 464Q241 464 245 464T251 465Q263 464 273 456T283 436Q283 419 277 356T270 286L328 328Q384 369 389 372T399 375Q412 375 423 365T435 338Q435 325 425 315Q420 312 357 282T289 250L355 219L425 184Q434 175 434 161Q434 146 425 136T401 125Q393 125 383 131T328 171L270 213Q283 79 283 63Q283 53 276 44T250 35Q231 35 224 44T216 63Q216 80 222 143T229 213L171 171Q115 130 110 127Q106 124 100 124Q87 124 76 134T64 161Q64 166 64 169T67 175T72 181T81 188T94 195T113 204T138 215T170 230T210 250L74 315Q65 324 65 338Q65 353 74 363T98 374Q106 374 116 368T171 328L229 286Z"></path></g><g data-mml-node="mn" transform="translate(1944.4,0)"><path data-c="33" d="M127 463Q100 463 85 480T69 524Q69 579 117 622T233 665Q268 665 277 664Q351 652 390 611T430 522Q430 470 396 421T302 350L299 348Q299 347 308 345T337 336T375 315Q457 262 457 175Q457 96 395 37T238 -22Q158 -22 100 21T42 130Q42 158 60 175T105 193Q133 193 151 175T169 130Q169 119 166 110T159 94T148 82T136 74T126 70T118 67L114 66Q165 21 238 21Q293 21 321 74Q338 107 338 175V195Q338 290 274 322Q259 328 213 329L171 330L168 332Q166 335 166 348Q166 366 174 366Q202 366 232 371Q266 376 294 413T322 525V533Q322 590 287 612Q265 626 240 626Q208 626 181 615T143 592T132 580H135Q138 579 143 578T153 573T165 566T175 555T183 540T186 520Q186 498 172 481T127 463Z"></path><path data-c="32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z" transform="translate(500,0)"></path></g></g></g></svg></mjx-container>）的数，如果这个数大于sample_int,则本次训练就舍弃本词。</li>
+<li>因为一般不会干跑，即会更新self.wv。此处，主要更新self.wv.vocab 和 self.wv.index2word<ul>
+<li><strong>self.wv.vocab</strong>：是一个dict。键是词，值是一个Vocab类。类属性有count词频，index序号（对应self.wv.index2word里的值），sample_int被保留概率*2**32</li>
+<li><strong>self.wv.index2word</strong>：是一个list。里面存的是dict的键，即词。</li>
+</ul>
+</li>
+</ol>
+<h2 id="self-finalize-vocab"><a href="#self-finalize-vocab" class="headerlink" title="self.finalize_vocab"></a>self.finalize_vocab</h2><p><code>self.finalize_vocab(update=update)  # build tables &amp; arrays根据最终词汇表设置建立表格和模型权重。</code><br>上一步中，已经把训练需要的vocab初始化并预处理完毕。本函数主要作用是为接下来的词向量训练做预备即：</p>
+<ol>
+<li>对于层次softmax方法(即<code>self.hs=1</code>)，生成哈夫曼树<code>self.create_binary_tree()</code></li>
+<li>对于负采样方法(即<code>self.ns&gt;0</code>)，生成负采样词表 <code>self.make_cum_table()</code></li>
+<li>根据参数<code>self.sorted_vocab==1</code>对vocab排序，是按词频count排序，倒序排列。默认会排序，默认会倒序，这样在<code>mostsimilar</code>函数中参数<code>restrict_vocab</code>就排上了用场(该参数设置一个int，表示在求mostsimilar时，只使用前<code>restrict_vocab</code>个词做检索)</li>
+<li>初始化词向量（self.wv.syn0，对每个输入词，都哈希加随机一个初始向量），初始化权重（self.syn1–hs，self.syn1neg–ns）<code>self.wv.syn0norm = None</code><br>以及初始化一个<code>self.syn0_lockf = ones(len(self.wv.vocab), dtype=REAL)  # zeros suppress learning</code></li>
+</ol>
+<p>以一次训练日志来说一下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">2018-11-05 19:12:27,816: INFO: collecting all words and their counts  #scan_vocab方法。下面。。。是指实时处理信息</span><br><span class="line">。。。</span><br><span class="line">2018-11-05 19:12:28,921: INFO: collected 108425 word types from a corpus of 2130859 raw words and 82450 sentences  #scan_vocab方法。总结数据：108425个distinct词，语料包含2130859个词，82450个句子</span><br><span class="line">2018-11-05 19:12:28,921: INFO: Loading a fresh vocabulary  #scale_vocab方法。开始</span><br><span class="line">2018-11-05 19:12:29,187: INFO: min_count=3 retains 65034 unique words (59% of original 108425, drops 43391)#scale_vocab方法。去低频词。去掉词频&lt;=3的词之后剩余65034个distinct词，即保留了59%的distinct词</span><br><span class="line">2018-11-05 19:12:29,187: INFO: min_count=3 leaves 2061089 word corpus (96% of original 2130859, drops 69770)#scale_vocab方法。去低频词。 去掉词频&lt;=3的词之后剩余2061089个词，保留了96%的语料词</span><br><span class="line">2018-11-05 19:12:29,371: INFO: deleting the raw counts dictionary of 108425 items    #scale_vocab方法。删除row_vocab</span><br><span class="line">2018-11-05 19:12:29,377: INFO: sample=0.001 downsamples 13 most-common words    #scale_vocab方法。下采样高频词，下采样参数是0.001，下采样了13个高频词</span><br><span class="line">2018-11-05 19:12:29,377: INFO: downsampling leaves estimated 2007163 word corpus (97.4% of prior 2061089)    #scale_vocab方法。下采样高频词，下采样后预计语料变为2007163个词，保留了97.4%</span><br><span class="line">2018-11-05 19:12:29,378: INFO: estimated required memory for 65034 words and 200 dimensions: 201605400 bytes    #scale_vocab方法。预计使用内存201605400 bytes  即200M</span><br><span class="line">2018-11-05 19:12:29,451: INFO: constructing a huffman tree from 65034 words    #finalize_vocab方法。构建哈夫曼树。此处因为设置了hs=1</span><br><span class="line">2018-11-05 19:12:31,718: INFO: built huffman tree with maximum node depth 19    #finalize_vocab方法。构建了最大深度为19的哈夫曼树</span><br></pre></td></tr></table></figure>
+<p>截止目前，vocab部分就搞定了。接下来是词向量训练<code>self.train</code></p>
+<h1 id="self-train"><a href="#self-train" class="headerlink" title="self.train"></a>self.train</h1><p>train这个函数内部包含或调用了很多子函数。大致分布如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">train {</span><br><span class="line">    <span class="number">1.</span>检查参数是否合法</span><br><span class="line">    <span class="number">2.</span>调用多线程训练模型以及训练过程中的状态日志显示{</span><br><span class="line">        <span class="number">2.1</span>.work_loop{        <span class="comment">#模型训练子函数，接收job_producer产生的job，从job获取sentences进行训练</span></span><br><span class="line">            <span class="number">2.1</span><span class="number">.1</span>.<span class="variable language_">self</span>._do_train_job{        <span class="comment">#实际训练数据的函数</span></span><br><span class="line">                            <span class="number">2.1</span><span class="number">.1</span><span class="number">.1</span>.train_batch_sg{        <span class="comment">#实现skip-gram模型。</span></span><br><span class="line">                                    <span class="number">2.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.1</span>.首先把输入的sentences逐句转换成word_vocabs顺便根据其sample_int值做了下采样。</span><br><span class="line">                                    <span class="number">2.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.2</span>.对于当前句的每一个词，它与其窗口内的每一个词(除了它自己)组成一对送入下面的函数</span><br><span class="line">                                    <span class="number">2.1</span><span class="number">.1</span><span class="number">.1</span><span class="number">.3</span>.train_sg_pair{        <span class="comment">#对于上一步中的一对词(当前词w1-&gt;上下文词w2)做训练,这里w1是目标词，w2是输入词，有点反直觉</span></span><br><span class="line">                                        <span class="keyword">if</span> hs:则做hs</span><br><span class="line">                                        <span class="keyword">if</span> ns:则作ns  注意这里，hs和ns可以都做，默认ns=<span class="number">1</span>，hs=<span class="number">0</span>。如果只设置hs=<span class="number">1</span>而没把ns设置成<span class="number">0</span>的话，会都做。</span><br><span class="line">                                    }</span><br><span class="line">                            }</span><br><span class="line">                            <span class="number">2.1</span><span class="number">.1</span><span class="number">.2</span>.train_batch_cbow{        <span class="comment">#实现cbow模型。</span></span><br><span class="line">                                    <span class="number">2.1</span><span class="number">.1</span><span class="number">.2</span><span class="number">.1</span>.首先把输入的sentences逐句转换成word_vocabs 顺便根据其sample_int值做了下采样。</span><br><span class="line">                                    <span class="number">2.1</span><span class="number">.1</span><span class="number">.2</span><span class="number">.2</span>.对于当前句的每一个词，组合(该词，上下文词之和)传入下函数</span><br><span class="line">                                    <span class="number">2.1</span><span class="number">.1</span><span class="number">.2</span><span class="number">.3</span>.train_cbow_pair{</span><br><span class="line">                                        <span class="keyword">if</span> hs:则做hs</span><br><span class="line">                                        <span class="keyword">if</span> ns:则作ns  注意这里，hs和ns可以都做，默认ns=<span class="number">1</span>，hs=<span class="number">0</span>。如果只设置hs=<span class="number">1</span>而没把ns设置成<span class="number">0</span>的话，会都做。</span><br><span class="line">                                    }</span><br><span class="line">                            }</span><br><span class="line">                    }</span><br><span class="line">        }</span><br><span class="line">      <span class="number">2.2</span>.job_producer{        </span><br><span class="line">        产生一个job队列job_queue，</span><br><span class="line">        持续从数据源读入sentences，</span><br><span class="line">        然后sentences数到达指定值(default=1w)后，</span><br><span class="line">        把这批sentences放入一个job，并把该job压入队列job_queue</span><br><span class="line">      }</span><br><span class="line">        <span class="number">2.3</span>.使用<span class="number">2.1</span> <span class="number">2.2</span> 组合多线程，由<span class="number">2.2</span>产生一个个job(一个batch的sentences)，</span><br><span class="line">            然后通过队列job_queue发送给<span class="number">2.1</span>，由多个workloop训练模型。</span><br><span class="line">            注意，此过程中，<span class="number">2.2</span>只有一个，<span class="number">2.1</span>有多个</span><br><span class="line">    }</span><br><span class="line">    <span class="number">3.</span>后续检查</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+<p>Python多线程与gensim多线程的问题：</p>
+<ol>
+<li>Python多线程(multithreding)对于CPU密集型的计算没有提速效果。对于io密集型好一点。但整体不会好很多。如果要跑多任务，请使用多进程（multiprocess）</li>
+<li>gensim为什么使用了多线程呢？这里由于内部是调用c++代码 所以还是能起到多线程作用</li>
+</ol>
+<h1 id="相似度计算："><a href="#相似度计算：" class="headerlink" title="相似度计算："></a>相似度计算：</h1><ol>
+<li>使用cos相似度</li>
+<li>词向量即syn0，而syn0norm即syn0归一化后的结果，归一化形式是每个词向量除以自己的模<br><code>self.syn0norm[i, :] = self.syn0[i, :]/sqrt((self.syn0[i, :] ** 2).sum(-1))</code></li>
+<li>计算mostsimilar，直接使用syn0norm</li>
+<li>计算similar(x,y)，先使用syn0获取x,y词向量wx,wy，然后单独对wx,wy归一化，再计算。</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tagsz/word2vec/" rel="tag"><i class="fa fa-tag"></i> word2vec</a>
+              <a href="/tagsz/NLP/" rel="tag"><i class="fa fa-tag"></i> NLP</a>
+              <a href="/tagsz/%E6%BA%90%E7%A0%81%E8%A7%A3%E8%AF%BB/" rel="tag"><i class="fa fa-tag"></i> 源码解读</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/10/01/2018/2018-10-01-work-record-linux-frp/" rel="prev" title="frp内网穿透">
+      <i class="fa fa-chevron-left"></i> frp内网穿透
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/12/29/2018/2018-01-06-ml-rs-ranker-GBDT-LR/" rel="next" title="古早博文-推荐系统-精排-CTR-GBDT+LR">
+      古早博文-推荐系统-精排-CTR-GBDT+LR <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E4%BD%93%E6%9D%A5%E8%AF%B4%EF%BC%8C%E8%AE%AD%E7%BB%83%E8%BF%87%E7%A8%8B%E6%89%A7%E8%A1%8C%E4%B8%A4%E6%AD%A5"><span class="nav-number">1.</span> <span class="nav-text">总体来说，训练过程执行两步</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#build-vocab"><span class="nav-number">2.</span> <span class="nav-text">build_vocab</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#self-scan-vocab"><span class="nav-number">2.1.</span> <span class="nav-text">self.scan_vocab</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#self-scale-vocab"><span class="nav-number">2.2.</span> <span class="nav-text">self.scale_vocab</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#self-finalize-vocab"><span class="nav-number">2.3.</span> <span class="nav-text">self.finalize_vocab</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#self-train"><span class="nav-number">3.</span> <span class="nav-text">self.train</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%9B%B8%E4%BC%BC%E5%BA%A6%E8%AE%A1%E7%AE%97%EF%BC%9A"><span class="nav-number">4.</span> <span class="nav-text">相似度计算：</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Leonard"
+      src="/images/avatar2.jpg">
+  <p class="site-author-name" itemprop="name">Leonard</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">34</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/liliangjie91" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;liliangjie91" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2024 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-cat"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Leonard</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">64k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">3:54</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+-->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>
