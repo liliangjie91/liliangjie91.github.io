@@ -268,6 +268,162 @@ mjx-container[display="true"] + br {
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2017/10/31/2017/2016-10-11-work-record-linux-ftp-server/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar2.jpg">
+      <meta itemprop="name" content="Leonard">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LeonardWo">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2017/10/31/2017/2016-10-11-work-record-linux-ftp-server/" class="post-title-link" itemprop="url">古早博文-Ubuntu FTP服务器搭建，配置修改，所遇问题解决</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-10-31 23:20:26" itemprop="dateCreated datePublished" datetime="2017-10-31T23:20:26+08:00">2017-10-31</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-01-17 01:00:29" itemprop="dateModified" datetime="2025-01-17T01:00:29+08:00">2025-01-17</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">技术</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="1-安装"><a href="#1-安装" class="headerlink" title="1.安装"></a>1.安装</h1><p><code>sudo apt-get install vsftpd</code><br>这样安装后，配置文件在 <code>/etc</code> 下即： <code>/etc/vsftpd.conf</code><br>备份默认配置<br><code>sudo cp /etc/vsftpd.conf /etc/vsftpd.conf.bak</code><br>下面就是修改配置文件了，此时，我们需要明确的，就是需求，我们的需求如下：</p>
+<blockquote>
+<p>1，一台win服务器定时（每两分钟）向一台Ubuntu服务器（本机器）发送一个文档。<br>2，该win机只能访问固定目录，不能全局访问<br>3，该win机对应用户名不能ssh登录Ubuntu服务器<br>4，另创建一个可以全局访问的用户<br>5，为Ubuntu服务器上的几个用户开通ftp权限</p>
+</blockquote>
+<p>注意，最终解决的方法可能并非最优方法。</p>
+<h1 id="2-配置文件修改-etc-vsftpd-conf"><a href="#2-配置文件修改-etc-vsftpd-conf" class="headerlink" title="2.配置文件修改&#x2F;etc&#x2F;vsftpd.conf"></a>2.配置文件修改&#x2F;etc&#x2F;vsftpd.conf</h1><ul>
+<li>2.1默认配置<br><a target="_blank" rel="noopener" href="https://security.appspot.com/vsftpd/vsftpd_conf.html">官方解释</a><br><a target="_blank" rel="noopener" href="http://os.51cto.com/art/201008/221842_all.htm">中文参考资料</a></li>
+<li>2.2重点配置项<ul>
+<li><p><strong>anonymous_enable&#x3D;YES&#x2F;NO</strong><br>是否允许匿名登录ftp。本项目是私有项目，故设为<strong>NO</strong></p>
+</li>
+<li><p><strong>write_enable&#x3D;YES&#x2F;NO</strong><br>是否允许写入。例如添加文件等。本项目为<strong>YES</strong></p>
+</li>
+<li><p><strong>local_enable&#x3D;YES&#x2F;NO</strong><br>是否允许本地用户登录。本项目为<strong>YES</strong></p>
+</li>
+<li><p><strong>local_umask&#x3D;022</strong><br>默认掩码：设置用户创建的文件的默认权限。同时ftp禁止直接创建一个可执行的文件。umask码与chmod时的码互补。即若umask&#x3D;022，实际权限为777-022&#x3D;755。但是由于ftp又有上述的禁止条件，所以刚才的算法对文件夹适用，对于文件可以使用666-022&#x3D;644。具体参考<a target="_blank" rel="noopener" href="http://blog.sina.com.cn/s/blog_49fd52cf0100nekk.html">此链接</a> 。本项目设置为<strong>022</strong></p>
+</li>
+<li><p><strong>chroot_local_user&#x3D;YES&#x2F;NO</strong><br>是否限制用户在其目录下。YES为限制，即用户只能在自己的目录下操作，无法到其他用户目录。本项目为<strong>YES</strong></p>
+</li>
+<li><p><strong>chroot_list_enable&#x3D;YES&#x2F;NO</strong><br>是否启用一个列表，这个列表由<em>chroot_list_file&#x3D;&#x2F;path&#x2F;chroot_list</em>来指定。这个列表里一行一个用户名。</p>
+<ul>
+<li>如果此项设置为YES，即启用列表则：<br>若<em>chroot_local_user&#x3D;YES</em>，那么这个列表里的用户就<strong>可以跳出</strong>目录限制而有权限到其他用户的路径。<br>若<em>chroot_local_user&#x3D;NO</em>，那么这个列表里的用户就<strong>被限制</strong>在了自己的目录而无法到其他用户路径。</li>
+<li>如果此项设置为NO，则不启用列表，直接按<em>chroot_local_user</em>的设置来执行。</li>
+</ul>
+<p>详细参考<a target="_blank" rel="noopener" href="http://blog.csdn.net/bluishglc/article/details/42398811">此链接</a></p>
+</li>
+<li><p><strong>allow_writeable_chroot&#x3D;YES</strong></p>
+</li>
+</ul>
+</li>
+</ul>
+<p>参考4.1</p>
+<ul>
+<li><p><strong>&#x2F;etc&#x2F;ftpusers</strong><br>这是一个文件，是个黑名单。里面用户不能登录ftp</p>
+</li>
+<li><p><strong>userlist_file&#x3D;&#x2F;etc&#x2F;vsftpd.user_list</strong><br>这也是指定了一个用户列表（一行一个）。这个列表会根据其他配置而变成<strong>白名单</strong> 或 <strong>黑名单</strong>：<br>其他配置即：<strong>userlist_enable 和 userlist_deny</strong>。</p>
+</li>
+<li><p><strong>userlist_enable&#x3D;YES&#x2F;NO</strong><br>是否启用userlist（即userlist_file指定的列表）。</p>
+<ul>
+<li>当设置为YES时，这个列表的用户能不能登录取决于userlist_deny的值。</li>
+<li>当设置为NO时，除了&#x2F;etc&#x2F;ftpusers中的用户，其他系统用户都可以登录。</li>
+</ul>
+<p>默认<code>(即改配置被注释或不出现在vsftpd.conf文件中时)</code>为NO</p>
+</li>
+<li><p><strong>userlist_deny&#x3D;YES&#x2F;NO</strong><br>是否把userlist设置为黑名单。YES为设置为黑名单；NO为白名单。<br><strong>注意！！</strong>此设置仅当<strong>userlist_enable&#x3D;YES</strong>时才会起作用。<br>默认为YES。即如果只设置userlist_enable&#x3D;YES，而不设置此项，则userlist里的用户是登录不了的。</p>
+</li>
+</ul>
+<h1 id="3-结果展示"><a href="#3-结果展示" class="headerlink" title="3.结果展示"></a>3.结果展示</h1><p><a target="_blank" rel="noopener" href="http://upload-images.jianshu.io/upload_images/3376541-f15abfe0213f6d45.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">登录过程</a></p>
+<p><a target="_blank" rel="noopener" href="http://upload-images.jianshu.io/upload_images/3376541-7714ebc9ca5cadb1.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">登陆成功</a></p>
+<p><a target="_blank" rel="noopener" href="http://upload-images.jianshu.io/upload_images/3376541-2063cf64d6e1f47a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">网页登录</a></p>
+<h1 id="4-所遇问题"><a href="#4-所遇问题" class="headerlink" title="4.所遇问题"></a>4.所遇问题</h1><ul>
+<li><h5 id="4-1-userlist中用户登录时报错：500-OOPS-vsftpd-refusing-to-run-with-writable-root-inside-chroot"><a href="#4-1-userlist中用户登录时报错：500-OOPS-vsftpd-refusing-to-run-with-writable-root-inside-chroot" class="headerlink" title="4.1. userlist中用户登录时报错：500 OOPS: vsftpd: refusing to run with writable root inside chroot()"></a>4.1. userlist中用户登录时报错：500 OOPS: vsftpd: refusing to run with writable root inside chroot()</h5></li>
+</ul>
+<p>解决方法<a target="_blank" rel="noopener" href="https://linux-tips.com/t/500-oops-vsftpd-refusing-to-run-with-writable-root-inside-chroot/249">见此处</a></p>
+<blockquote>
+<p><strong>If you’re using vsftpd with chroot local user option and write enable like this:</strong><br><code>write_enable=YES</code><br><code>chroot_local_user=YES</code><br><strong>and you’re getting following error when you log-in through ftp:</strong><br><code>500 OOPS: vsftpd: refusing to run with writable root inside chroot()</code><br><strong>you can fix the problem with adding following line to &#x2F;etc&#x2F;vsftpd.conf and restart the vsftpd service:</strong><br><code>allow_writeable_chroot=YES</code></p>
+</blockquote>
+<p>这是因为如果配置中开启了chroot来控制用户路径（*<code>chroot_local_user=YES</code> 说明用户无法跳出自己的初始根目录而去访问他人的目录<em>），则用户不能再具有在该用户根目录下的写的权限。所以，要添加配置项<strong>allow_writeable_chroot&#x3D;YES</strong>以开启根目录（</em>非系统根目录，而是用户登录后所在的最上级目录*）下写权限。</p>
+<ul>
+<li><h5 id="4-2-userlist中nologin用户登录时报错：530-Login-incorrect"><a href="#4-2-userlist中nologin用户登录时报错：530-Login-incorrect" class="headerlink" title="4.2. userlist中nologin用户登录时报错：530 Login incorrect."></a>4.2. userlist中nologin用户登录时报错：530 Login incorrect.</h5></li>
+</ul>
+<p>解决方法<a target="_blank" rel="noopener" href="https://serverfault.com/questions/358324/ftp-doesnt-allow-usr-sbin-nologin-user">见此处</a></p>
+<blockquote>
+<p>If you are not using PAM, then vsftpd will do its own check for a valid<br>user shell in &#x2F;etc&#x2F;shells. You may need to disable this if you use an invalid<br>shell to disable logins other than FTP logins. Put check_shell&#x3D;NO in your<br>&#x2F;etc&#x2F;vsftpd.conf.</p>
+</blockquote>
+<p><strong>或者</strong></p>
+<blockquote>
+<p>Look at <strong>check_shell</strong> in vsftpd.conf:<br><code>Note! This option only has an effect for non-PAM builds of vsftpd.</code><br><code>If disabled, vsftpd will not check /etc/shells for a valid user</code><br><code>shell for local logins.</code><br><code>Default: YES</code><br><strong>You can add <code>&#39;/usr/sbin/nologin&#39;</code> to <code>/etc/shells</code>. Simple and easy solution.</strong><br>Another one is to change vsftpd.conf&#x2F;PAM configuration.<br>Comment out this “auth …” line in PAM case:<br><code>$ grep shells /etc/pam.d/vsftpd</code><br><code>auth    required        pam_shells.so</code></p>
+</blockquote>
+<p>原因是vsftpd配置文件的check_shell默认是开启的<br>当你的用户当初创建时是用的<code>-s /bin/false</code> or <code>-s bin/nologin</code><br>ftp会拿这个和<code>/etc/shells</code>文件比对，如果不包含，则报错。所以，<br>你可以把check_shell设置为NO<br>或者把<code>bin/nologin</code>添加进<code>/etc/shells</code>来解决此问题。<br>又或者，找到vsftpd对应的pam文件<code>/etc/pam.d/vsftpd</code>，把<code>auth    required        pam_shells.so</code>这一行注释掉。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://example.com/2017/10/31/2017/2016-10-10-work-record-linux-flask/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -857,7 +1013,7 @@ mjx-container[display="true"] + br {
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">34</span>
+          <span class="site-state-item-count">35</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -870,7 +1026,7 @@ mjx-container[display="true"] + br {
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-count">35</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -912,13 +1068,13 @@ mjx-container[display="true"] + br {
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">64k</span>
+    <span title="站点总字数">65k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">3:54</span>
+    <span title="站点阅读时长">3:58</span>
 </div>
 
 <!--
