@@ -16,7 +16,7 @@ tags: [大模型演进, AI模型, NLP, RNN, seq2seq, LSTM, GRU]
 CV中，前面的卷积池化层是编码器，后面的mlp是解码器。
 即使在RNN中，亦可认为隐层h是编码器，输出层是解码器。  
 而Seq2Seq是显式的编码器解码器结构：
-
+<!-- more -->
 <img src="/image/2025/image-seq2seq-00.png" width=500 height=400 />  
 
 # Seq2Seq的中间特征
