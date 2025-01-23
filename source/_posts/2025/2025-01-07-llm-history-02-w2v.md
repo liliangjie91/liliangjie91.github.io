@@ -12,6 +12,7 @@ tags:
     - word2vec
     - doc2vec
 ---
+# 模型结构
 Word2Vec是对NNLM的优化，提高了训练速度。
 <img src="/image/2025/image_w2v_1.png" width=500 height=300 /> 
 上图是神经网络语言模型的架构，是一个简单的三层神经网络  
