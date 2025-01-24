@@ -17,7 +17,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
   <meta name="description" content="编码器解码器结构编码器解码器（Encoder-Decoder）结构，是深度学习的一个抽象概念。描述了深度学习中对任务过程的抽象概括：输入内容经过编码器得到特征，特征经过解码器得到结果。他未必是显式的分为2个模块。例如在MLP中，可以认为前n-1层是编码器，输出层是解码器。CV中，前面的卷积池化层是编码器，后面的mlp是解码器。即使在RNN中，亦可认为隐层h是编码器，输出层是解码器。而Seq2Seq">
@@ -37,8 +37,8 @@
 <meta property="article:published_time" content="2025-01-08T12:23:18.000Z">
 <meta property="article:modified_time" content="2025-01-20T13:19:25.900Z">
 <meta property="article:author" content="Leonard">
-<meta property="article:tag" content="RNN">
 <meta property="article:tag" content="NLP">
+<meta property="article:tag" content="RNN">
 <meta property="article:tag" content="大模型演进">
 <meta property="article:tag" content="AI模型">
 <meta property="article:tag" content="seq2seq">
@@ -440,8 +440,8 @@ GRU少了细胞状态，只有2个门，减少了计算量，提高了计算效�
       <footer class="post-footer">
           
           <div class="post-tags">
-              <a href="/tagsz/RNN/" rel="tag"><i class="fa fa-tag"></i> RNN</a>
               <a href="/tagsz/NLP/" rel="tag"><i class="fa fa-tag"></i> NLP</a>
+              <a href="/tagsz/RNN/" rel="tag"><i class="fa fa-tag"></i> RNN</a>
               <a href="/tagsz/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%BC%94%E8%BF%9B/" rel="tag"><i class="fa fa-tag"></i> 大模型演进</a>
               <a href="/tagsz/AI%E6%A8%A1%E5%9E%8B/" rel="tag"><i class="fa fa-tag"></i> AI模型</a>
               <a href="/tagsz/seq2seq/" rel="tag"><i class="fa fa-tag"></i> seq2seq</a>
@@ -536,7 +536,7 @@ GRU少了细胞状态，只有2个门，减少了计算量，提高了计算效�
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">35</span>
+          <span class="site-state-item-count">37</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -549,7 +549,7 @@ GRU少了细胞状态，只有2个门，减少了计算量，提高了计算效�
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">35</span>
+        <span class="site-state-item-count">36</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -591,17 +591,17 @@ GRU少了细胞状态，只有2个门，减少了计算量，提高了计算效�
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">65k</span>
+    <span title="站点总字数">69k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">3:58</span>
+    <span title="站点阅读时长">4:11</span>
 </div>
 
 <!--
-  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
 -->
 

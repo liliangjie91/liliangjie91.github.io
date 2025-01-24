@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="模型结构">
+<meta property="og:type" content="article">
+<meta property="og:title" content="大语言模型演进史-07-GPT2-3">
+<meta property="og:url" content="http://example.com/2025/01/23/2025/2025-01-23-llm-history-07-gpt2-3/index.html">
+<meta property="og:site_name" content="LeonardWo">
+<meta property="og:description" content="模型结构">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/image/2025/image-gpt2-more.png">
+<meta property="og:image" content="http://example.com/image/2025/image-gpt2.png">
+<meta property="og:image" content="http://example.com/image/2025/image-gpt3-data.png">
+<meta property="og:image" content="http://example.com/image/2025/image-gpt3.png">
+<meta property="article:published_time" content="2025-01-23T13:20:21.000Z">
+<meta property="article:modified_time" content="2025-01-24T16:15:33.118Z">
+<meta property="article:author" content="Leonard">
+<meta property="article:tag" content="NLP">
+<meta property="article:tag" content="大模型演进">
+<meta property="article:tag" content="AI模型">
+<meta property="article:tag" content="transformer">
+<meta property="article:tag" content="GPT">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/image/2025/image-gpt2-more.png">
+
+<link rel="canonical" href="http://example.com/2025/01/23/2025/2025-01-23-llm-history-07-gpt2-3/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>大语言模型演进史-07-GPT2-3 | LeonardWo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">LeonardWo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">wowowowo</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2025/01/23/2025/2025-01-23-llm-history-07-gpt2-3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar2.jpg">
+      <meta itemprop="name" content="Leonard">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="LeonardWo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          大语言模型演进史-07-GPT2-3
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2025-01-23 21:20:21" itemprop="dateCreated datePublished" datetime="2025-01-23T21:20:21+08:00">2025-01-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-01-25 00:15:33" itemprop="dateModified" datetime="2025-01-25T00:15:33+08:00">2025-01-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/" itemprop="url" rel="index"><span itemprop="name">技术</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%8A%80%E6%9C%AF/AI%E5%A4%A7%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">AI大模型</span></a>
+                </span>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="模型结构"><a href="#模型结构" class="headerlink" title="模型结构"></a>模型结构</h1><div style="display: flex; justify-content: space-between;">
+  <img src="/image/2025/image-gpt2-more.png" style="width: 74%;" alt="Image 2">
+  <img src="/image/2025/image-gpt2.png" style="width: 25%;" alt="Image 1">
+</div>
+<span id="more"></span>
+GPT2,3的模型结构和GPT1大致相同，依旧是Decoder-Only的模型，差异都在图中标出，整体是在向更大发展。
+
+<h1 id="GPT-2"><a href="#GPT-2" class="headerlink" title="GPT-2"></a>GPT-2</h1><h2 id="数据"><a href="#数据" class="headerlink" title="数据"></a>数据</h2><p>作者希望使用高质量的数据集，于是自己制作了WebText数据集，<br>主要来自Reddit上的质量较高的网页链接4500万个对其处理后整理成800万个文档（GPT1是7000部小说），共计40GB大小(GPT1是5GB)。</p>
+<ul>
+<li>去除维基百科数据<br>为了防止模型在这些数据中学到测试集，而导致效果的说服力不足（或者是想和BERT区分开？）。</li>
+</ul>
+<h2 id="模型训练"><a href="#模型训练" class="headerlink" title="模型训练"></a>模型训练</h2><h3 id="预训练"><a href="#预训练" class="headerlink" title="预训练"></a>预训练</h3><p>为了实现Zero-Shot这一目标，模型的输入结构要做改变：<br>GPT1中，为了应对各种NLP任务，微调时会加入功能性Token如<code>开始符（Start）、分隔符（Delim）、结束符（Extract）</code><br>而要实现Zero-Shot就不能微调，第一个问题就是模型如何知道它当前要处理的是什么任务呢？<br>所以，让<strong>模型知道自己要处理什么任务</strong>这个任务就落在了预训练头上。<br>这就需要对预训练数据做处理：<br>例如针对翻译任务，就需要在原数据基础上，在前面加上“translate english to chinese”，一条数据就是如下格式：<br><code>translate english to chinese, [englist text], [chinese text] </code><br>针对问答任务：<br><code>answer the question, [document], [question], [answer]</code><br>相当于针对每一条训练数据，都标注了任务类型。只要这样的数据够多，模型就能学到<strong>以哪些句子开头的输入对应哪些任务</strong>。</p>
+<h2 id="模型参数"><a href="#模型参数" class="headerlink" title="模型参数"></a>模型参数</h2><style>
+  table {
+    width: 60%;
+    font-size: 12px;
+  }
+  th, td {
+    padding: 2px;
+    text-align: center;
+  }
+</style>
+<table>
+<thead>
+<tr>
+<th>modle</th>
+<th>Decoder层</th>
+<th>注意力头</th>
+<th>维度</th>
+<th>前馈维度</th>
+<th>参数量</th>
+<th>词表</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GPT1</td>
+<td>12</td>
+<td>12</td>
+<td>768</td>
+<td>768*4</td>
+<td>0.1B=1亿</td>
+<td>4w-BPE</td>
+</tr>
+<tr>
+<td>GPT2</td>
+<td>48</td>
+<td>12</td>
+<td>1600</td>
+<td>1600*4</td>
+<td>1.5B=15亿</td>
+<td>5w-BPE</td>
+</tr>
+</tbody></table>
+<p><strong>预训练时：</strong></p>
+<table>
+<thead>
+<tr>
+<th>modle</th>
+<th>优化器</th>
+<th>激活函数</th>
+<th>lr</th>
+<th>seqlen</th>
+<th>batch</th>
+<th>epoch</th>
+<th>dropout</th>
+<th>L2正则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GPT1</td>
+<td>Adam</td>
+<td>GELU</td>
+<td>max=2.5e-4</td>
+<td>512</td>
+<td>64</td>
+<td>100</td>
+<td>0.1</td>
+<td>0.01</td>
+</tr>
+<tr>
+<td>GPT2</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>1024</td>
+<td>512</td>
+<td>100</td>
+<td>0.1</td>
+<td>0.01</td>
+</tr>
+</tbody></table>
+<p>其中学习率是线性增到max（2000step）再cosine衰减到0</p>
+<h2 id="讨论"><a href="#讨论" class="headerlink" title="讨论"></a>讨论</h2><h3 id="论文出发点"><a href="#论文出发点" class="headerlink" title="论文出发点"></a>论文出发点</h3><p>GPT1可以说是被BERT碾压，那么GPT如果还要做下去，就要比BERT效果提高一些。<br>但是单纯增大GPT的规模和数据，却很难打过或远超同规模BERT。<br>这种情况下，作者需要有其他的创新点，否则论文就没有任何新颖的地方了。<br>本文就提出了<strong>另一个赛道zero-shot</strong>：属于“我长跑跑不过你，有本事来比比跨栏“。<br>所以关键就在于作者要说服大家这个新赛道是有意义的，是一个更宏大赛道。</p>
+<h3 id="Zero-Shot"><a href="#Zero-Shot" class="headerlink" title="Zero-Shot"></a>Zero-Shot</h3><p>GPT1，BERT出现之后，NLP领域预训练+微调的模型已经被证实有效。那如何更进一步呢？<br><strong>那就是预训练完的模型可以直接处理各种NLP任务，即不再微调。</strong><br>这种模型预训练完之后直接输入问题模型就能给出答案的方式，就是<strong>Zero-Shot</strong><br>很显然，<strong>Zero-Shot</strong>模型是更易用的，更像是人工智能的。</p>
+<h3 id="贡献"><a href="#贡献" class="headerlink" title="贡献"></a>贡献</h3><p>提出了<strong>Zero-Shot</strong><br>验证了仅使用预训练就可以完成下游NLP任务。<br>提出了使用Prompt来激活模型的zero-shot能力<br>提出随着模型规模增大，其能力仍有上升空间</p>
+<h1 id="GPT-3"><a href="#GPT-3" class="headerlink" title="GPT-3"></a>GPT-3</h1><h2 id="数据-1"><a href="#数据-1" class="headerlink" title="数据"></a>数据</h2><img src="/image/2025/image-gpt3-data.png" width="600" height="250">
+与GPT2不同，GPT3对数据的态度是多多益善，还使用了gpt2所“嫌弃”的Common Crawl数据集，以及gpt2所剔除的维基百科数据集。
+当然，GPT3对这些数据进行了大量清洗，过滤，去重等操作
+45T的原始数据，清洗后为**570G**，是GPT2的16倍，GPT1的110倍。总计500B个训练Token。
+
+<h2 id="模型参数-1"><a href="#模型参数-1" class="headerlink" title="模型参数"></a>模型参数</h2><p>总参数量=<strong>175B 是GPT2的110倍，GPT1的1700倍</strong><br>值得注意的是，更大的模型一般会使用更大的batch size，但只需要更小的learning rate。</p>
+<style>
+  table {
+    width: 60%;
+    font-size: 12px;
+  }
+  th, td {
+    padding: 2px;
+    text-align: center;
+  }
+</style>
+<table>
+<thead>
+<tr>
+<th>modle</th>
+<th>Decoder层</th>
+<th>注意力头</th>
+<th>维度d</th>
+<th>前馈维度</th>
+<th>参数量</th>
+<th>词表</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GPT1</td>
+<td>12</td>
+<td>12</td>
+<td>768</td>
+<td>d*4</td>
+<td>0.1B=1亿</td>
+<td>4w-BPE</td>
+</tr>
+<tr>
+<td>GPT2</td>
+<td>48</td>
+<td>12</td>
+<td>1600</td>
+<td>d*4</td>
+<td>1.5B=15亿</td>
+<td>5w-BPE</td>
+</tr>
+<tr>
+<td>GPT3</td>
+<td>96</td>
+<td>96</td>
+<td>12288</td>
+<td>d*4</td>
+<td>175B=1750亿</td>
+<td>5w-BPE</td>
+</tr>
+</tbody></table>
+<p><strong>预训练时：</strong></p>
+<table>
+<thead>
+<tr>
+<th>modle</th>
+<th>优化器</th>
+<th>激活函数</th>
+<th>lr</th>
+<th>seqlen</th>
+<th>batch</th>
+<th>epoch</th>
+<th>dropout</th>
+<th>L2正则</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GPT1</td>
+<td>Adam</td>
+<td>GELU</td>
+<td>max=2.5e-4</td>
+<td>512</td>
+<td>64</td>
+<td>100</td>
+<td>0.1</td>
+<td>0.01</td>
+</tr>
+<tr>
+<td>GPT2</td>
+<td>Adam</td>
+<td>GELU</td>
+<td>-</td>
+<td>1024</td>
+<td>512</td>
+<td>100</td>
+<td>0.1</td>
+<td>0.01</td>
+</tr>
+<tr>
+<td>GPT3</td>
+<td>Adam</td>
+<td>GELU</td>
+<td>0.6e-4</td>
+<td>2048</td>
+<td>3.2M</td>
+<td>1</td>
+<td>0.1</td>
+<td>0.01</td>
+</tr>
+</tbody></table>
+<h2 id="讨论-1"><a href="#讨论-1" class="headerlink" title="讨论"></a>讨论</h2><h3 id="论文出发点-1"><a href="#论文出发点-1" class="headerlink" title="论文出发点"></a>论文出发点</h3><p>有了GPT2的铺垫，GPT3要做的就是证明GPT2的路是对的（解决GPT-2的有效性问题）</p>
+<h3 id="few-shot"><a href="#few-shot" class="headerlink" title="few-shot"></a>few-shot</h3><p>可能zero-shot这一步迈的太大，论文着重讲了few-shot。<br>看一下few-shot，one-shot，zero-shot和fine-tune的区别</p>
+<style>
+  table {
+    width: 80%;
+    font-size: 12px;
+  }
+  th, td {
+    padding: 2px;
+    text-align: center;
+  }
+</style>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>预训练后是否还更新权重</th>
+<th>整体流程</th>
+<th>样例个数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>fine-tune</td>
+<td>是</td>
+<td>预训练+有监督训练</td>
+<td>-</td>
+</tr>
+<tr>
+<td>few-shot</td>
+<td>否</td>
+<td>预训练+任务描述+样例+问题/prompt</td>
+<td>10-100</td>
+</tr>
+<tr>
+<td>one-shot</td>
+<td>否</td>
+<td>预训练+任务描述+样例+问题/prompt</td>
+<td>1</td>
+</tr>
+<tr>
+<td>zero-shot</td>
+<td>否</td>
+<td>预训练+任务描述+问题/prompt</td>
+<td>0</td>
+</tr>
+</tbody></table>
+<p>Few-shot又叫in-context learning，即，模型在输入的样例中学会了如何处理当前问题。</p>
+<p>下图展示4中方法的具体不同：</p>
+<img src="/image/2025/image-gpt3.png" width="700" height="700">
+
+<p>但实际上作者并没有放弃zero-shot。论文中few-shot效果更好，这也很容易理解。<br>但few-shot也仅仅是一个发展阶段，最终的目标依旧是zero-shot。<br>GPT3是GPT2中“舍弃微调”这一思想的延续。<br>论文用大量的实验夯实了GPT2的观点：<strong>大参数大数据集预训练+prompt可以替代微调</strong><br>人们使用NLP模型的门槛又降低了（虽然不用微调，但是模型体积却变大了，也为后来的大模型API埋下伏笔）<br>或者说一个模型解决所有NLP问题的可能性又变大了。</p>
+<h3 id="走向zero-shot"><a href="#走向zero-shot" class="headerlink" title="走向zero-shot"></a>走向zero-shot</h3><p>GPT接下来的问题就是把few-shot也“训练”进模型，从而使模型获得zero-shot的能力，<br>这也是后续instructGPT以及ChatGPT所做的事。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tagsz/NLP/" rel="tag"><i class="fa fa-tag"></i> NLP</a>
+              <a href="/tagsz/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E6%BC%94%E8%BF%9B/" rel="tag"><i class="fa fa-tag"></i> 大模型演进</a>
+              <a href="/tagsz/AI%E6%A8%A1%E5%9E%8B/" rel="tag"><i class="fa fa-tag"></i> AI模型</a>
+              <a href="/tagsz/transformer/" rel="tag"><i class="fa fa-tag"></i> transformer</a>
+              <a href="/tagsz/GPT/" rel="tag"><i class="fa fa-tag"></i> GPT</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2025/01/21/2025/2025-01-22-llm-history-06-bert/" rel="prev" title="大语言模型演进史-06-BERT">
+      <i class="fa fa-chevron-left"></i> 大语言模型演进史-06-BERT
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E7%BB%93%E6%9E%84"><span class="nav-number">1.</span> <span class="nav-text">模型结构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#GPT-2"><span class="nav-number">2.</span> <span class="nav-text">GPT-2</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE"><span class="nav-number">2.1.</span> <span class="nav-text">数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83"><span class="nav-number">2.2.</span> <span class="nav-text">模型训练</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A2%84%E8%AE%AD%E7%BB%83"><span class="nav-number">2.2.1.</span> <span class="nav-text">预训练</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E5%8F%82%E6%95%B0"><span class="nav-number">2.3.</span> <span class="nav-text">模型参数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%A8%E8%AE%BA"><span class="nav-number">2.4.</span> <span class="nav-text">讨论</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BA%E6%96%87%E5%87%BA%E5%8F%91%E7%82%B9"><span class="nav-number">2.4.1.</span> <span class="nav-text">论文出发点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Zero-Shot"><span class="nav-number">2.4.2.</span> <span class="nav-text">Zero-Shot</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B4%A1%E7%8C%AE"><span class="nav-number">2.4.3.</span> <span class="nav-text">贡献</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#GPT-3"><span class="nav-number">3.</span> <span class="nav-text">GPT-3</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE-1"><span class="nav-number">3.1.</span> <span class="nav-text">数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E5%8F%82%E6%95%B0-1"><span class="nav-number">3.2.</span> <span class="nav-text">模型参数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%A8%E8%AE%BA-1"><span class="nav-number">3.3.</span> <span class="nav-text">讨论</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BA%E6%96%87%E5%87%BA%E5%8F%91%E7%82%B9-1"><span class="nav-number">3.3.1.</span> <span class="nav-text">论文出发点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#few-shot"><span class="nav-number">3.3.2.</span> <span class="nav-text">few-shot</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B5%B0%E5%90%91zero-shot"><span class="nav-number">3.3.3.</span> <span class="nav-text">走向zero-shot</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Leonard"
+      src="/images/avatar2.jpg">
+  <p class="site-author-name" itemprop="name">Leonard</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">37</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">36</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/liliangjie91" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;liliangjie91" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2024 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-cat"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Leonard</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">69k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">4:11</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+-->
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>

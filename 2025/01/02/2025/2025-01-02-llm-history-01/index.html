@@ -17,7 +17,7 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
   <meta name="description" content="ChatGPT的出现是AI发展的重要里程碑，使得大模型正式破圈。AI大模型（亦称：大模型、大语言模型、AI模型）有较为清晰的脉络，本文主要概述大模型的演进历史，从Word2Vec到GPT。">
@@ -40,7 +40,7 @@
 <meta property="og:image" content="http://example.com/image/2025/image-gpt-chatgpt-pipline.jpg">
 <meta property="og:image" content="http://example.com/image/2025/image-nlp-model-history.png">
 <meta property="article:published_time" content="2025-01-02T05:09:01.000Z">
-<meta property="article:modified_time" content="2025-01-16T17:00:29.359Z">
+<meta property="article:modified_time" content="2025-01-23T15:51:56.213Z">
 <meta property="article:author" content="Leonard">
 <meta property="article:tag" content="NLP">
 <meta property="article:tag" content="大模型演进">
@@ -319,7 +319,7 @@ mjx-container[display="true"] + br {
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-01-17 01:00:29" itemprop="dateModified" datetime="2025-01-17T01:00:29+08:00">2025-01-17</time>
+                <time title="修改时间：2025-01-23 23:51:56" itemprop="dateModified" datetime="2025-01-23T23:51:56+08:00">2025-01-23</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -432,12 +432,9 @@ mjx-container[display="true"] + br {
 </ul>
 <hr>
 <h3 id="词嵌入思想的布道者-Word2Vec-2013"><a href="#词嵌入思想的布道者-Word2Vec-2013" class="headerlink" title="词嵌入思想的布道者 - Word2Vec - 2013"></a>词嵌入思想的布道者 - Word2Vec - 2013</h3><p>2013年，即NNLM提出的10年后，Tomas Mikolov 先后发表<br><a target="_blank" rel="noopener" href="https://arxiv.org/abs/1301.3781">Efficient Estimation of Word Representations in Vector Space - 45468引用-截至20250101</a><br><a target="_blank" rel="noopener" href="https://arxiv.org/abs/1310.4546">Distributed Representations of Words and Phrases and their Compositionality - 46189引用-截至20250101</a><br>它引入了 <strong>Skip-gram 和 CBOW</strong> 两种高效训练算法，并针对NNLM计算量消耗最大的最后一步提出了<strong>层次softmax和negative sample负样本采样</strong>这两种优化方法<br>它的<strong>核心功能就是得到word embedding词向量</strong>，用于下游任务。它是一个快速高效的词嵌入工具。人们也逐渐意识到词向量的用处。</p>
-<pre><code>所谓词嵌入，即对文本序列中的一个个词映射到高维空间。  
-其实不一定是文本序列，也可以是用户的点击序列，购买序列。  
-如果说对文本序列中的词做嵌入，是对整体人类语言的模拟。    
-那么，对用户点击序列中item-id做嵌入，是对整体用户点击习惯的模拟。  
-所以在推荐系统领域，基于word2vec启发而来的item2vec也是一种快速高效的召回算法。  
-</code></pre>
+<blockquote>
+<p>所谓词嵌入，即对文本序列中的一个个词映射到高维空间。<br>  其实不一定是文本序列，也可以是用户的点击序列，购买序列。<br>  如果说对文本序列中的词做嵌入，是对整体人类语言的模拟。<br>  那么，对用户点击序列中item-id做嵌入，是对整体用户点击习惯的模拟。<br>  所以在推荐系统领域，基于word2vec启发而来的item2vec也是一种快速高效的召回算法。  </p>
+</blockquote>
 <p>2014年，Mikolov趁热打铁推出<a target="_blank" rel="noopener" href="https://arxiv.org/abs/1405.4053">Distributed Representations of Sentences and Documents</a>即Doc2vec，文档嵌入。<br>此算法可以把句子或文档映射成一个向量。从而可以更容易地实现相似文档查找，文档分类等任务<br>word2vec，doc2vec的出现，加速了自然语言<strong>向量化</strong>进程，也更容易接入下游任务</p>
 <hr>
 <h3 id="注意力机制的催化剂-Seq2Seq-2014"><a href="#注意力机制的催化剂-Seq2Seq-2014" class="headerlink" title="注意力机制的催化剂 - Seq2Seq - 2014"></a>注意力机制的催化剂 - Seq2Seq - 2014</h3><p><a target="_blank" rel="noopener" href="https://arxiv.org/abs/1409.3215v3">Sequence to Sequence Learning with Neural Networks - 27886引用-截至20250101</a>  </p>
@@ -786,17 +783,9 @@ mjx-container[display="true"] + br {
 
 <p>在经过GPT1-2-3的发展之后，模型规模已经足够大，要解决的问题是：如何更好解决多样的NLP任务。</p>
 <p>以下参看<a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/2429820">此文</a></p>
-<pre><code>OpenAI在GPT-3模型的基础上，通过两种主要途径进行了改进：代码数据训练和人类偏好对齐。
-1. 首先，为了解决GPT-3在编程和数学问题求解上的不足，OpenAI于2021年推出了**Codex模型**，该模型在GitHub代码数据上进行了微调，显著提升了解决复杂问题的能力。
-此外，通过开发一种对比方法训练文本和代码嵌入，进一步改善了相关任务的性能。
-这些工作促成了GPT-3.5模型的开发，表明在代码数据上的训练对提高模型的综合性能，尤其是代码能力具有重要作用。
-2. 其次，OpenAI自2017年起就开始了**人类偏好对齐**的研究，通过强化学习算法从人类标注的偏好数据中学习改进模型性能。
-2017年，OpenAI提出了**PPO算法**，成为后续人类对齐技术的标配。
-2022年，OpenAI推出了InstructGPT，正式建立了**基于人类反馈的强化学习算法RLHF**
-旨在改进GPT-3模型与人类对齐的能力，提高指令遵循能力，并缓解有害内容的生成，这对大语言模型的安全部署至关重要。
-3. OpenAI在其技术博客中描述了对齐研究的技术路线，并总结了三个有前景的研究方向：使用人类反馈训练人工智能系统、协助人类评估和进行对齐研究。
-通过这些增强技术，OpenAI将改进后的GPT模型命名为GPT-3.5，它不仅展现了更强的综合能力，也标志着OpenAI在大语言模型研究方面迈出了重要一步。
-</code></pre>
+<blockquote>
+<p>OpenAI在GPT-3模型的基础上，通过两种主要途径进行了改进：代码数据训练和人类偏好对齐。<br>1.首先，为了解决GPT-3在编程和数学问题求解上的不足，OpenAI于2021年推出了<strong>Codex模型</strong>，该模型在GitHub代码数据上进行了微调，显著提升了解决复杂问题的能力。<br>此外，通过开发一种对比方法训练文本和代码嵌入，进一步改善了相关任务的性能。<br>这些工作促成了GPT-3.5模型的开发，表明在代码数据上的训练对提高模型的综合性能，尤其是代码能力具有重要作用。<br>2.其次，OpenAI自2017年起就开始了<strong>人类偏好对齐</strong>的研究，通过强化学习算法从人类标注的偏好数据中学习改进模型性能。<br>2017年，OpenAI提出了<strong>PPO算法</strong>，成为后续人类对齐技术的标配。<br>2022年，OpenAI推出了InstructGPT，正式建立了<strong>基于人类反馈的强化学习算法RLHF</strong><br>旨在改进GPT-3模型与人类对齐的能力，提高指令遵循能力，并缓解有害内容的生成，这对大语言模型的安全部署至关重要。<br>3.OpenAI在其技术博客中描述了对齐研究的技术路线，并总结了三个有前景的研究方向：使用人类反馈训练人工智能系统、协助人类评估和进行对齐研究。<br>通过这些增强技术，OpenAI将改进后的GPT模型命名为GPT-3.5，它不仅展现了更强的综合能力，也标志着OpenAI在大语言模型研究方面迈出了重要一步。</p>
+</blockquote>
 <h4 id="chatGPT-训练流程"><a href="#chatGPT-训练流程" class="headerlink" title="chatGPT 训练流程"></a>chatGPT 训练流程</h4><img src="/image/2025/image-gpt-instructgpt-pipline.png" width="800" height="600">
 <img src="/image/2025/image-gpt-chatgpt-pipline.jpg" width="800" height="400">
 
@@ -920,7 +909,7 @@ NLP的四个范式：
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">35</span>
+          <span class="site-state-item-count">37</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -933,7 +922,7 @@ NLP的四个范式：
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">35</span>
+        <span class="site-state-item-count">36</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -975,17 +964,17 @@ NLP的四个范式：
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">65k</span>
+    <span title="站点总字数">69k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">3:58</span>
+    <span title="站点阅读时长">4:11</span>
 </div>
 
 <!--
-  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
 -->
 
