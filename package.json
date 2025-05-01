@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "hexo": "^7.3.0",
-    "hexo-asset-img": "^1.1.0",
+    "hexo-asset-img": "^1.2.0",
     "hexo-asset-path": "^1.0.4",
     "hexo-deployer-git": "^4.0.0",
     "hexo-filter-mathjax": "^0.9.0",
